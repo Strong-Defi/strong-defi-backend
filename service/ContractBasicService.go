@@ -27,6 +27,7 @@ func BasicDemo(c *gin.Context) {
 	err := c.ShouldBindJSON(&demo)
 	/*数据校验*/
 	if errorMsg := dataValidate(demo); errorMsg != nil {
+		logs.Error("Error binding JSON:", errorMsg)
 		myCtx.JSON(API.DATA_VALIDATE_ERROR, "")
 		return
 	}
