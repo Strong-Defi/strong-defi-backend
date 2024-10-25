@@ -22,10 +22,15 @@ This is GIN strong-defi-backend.
         3、设置最大保留天数: 允许设定旧日志文件的保留天数，超出天数的日志文件会被自动删除。
         4、压缩功能: 可以选择是否对旧日志文件进行压缩，以节省存储空间。
      10、引入viper：go get github.com/spf13/viper，Viper是Go应用程序的完整配置解决方案，它支持:读取JSON, TOML, YAML, HCL, envfile和Java属性配置文件
+     11、引入jwt：go get github.com/golang-jwt/jwt  
+     12、引入fastjson：go get github.com/valyala/fastjson
+
 
 合约转换go命令：
     1、通过hardhat进行编辑，注意，只需要复制abi那部分json即可
-    1、abigen --abi={abi的绝对路径} --pkg=store --out={输出的文件名，可以加上路径}
+    2、abigen --abi={abi的绝对路径} --contract=contract --out={输出的文件名，可以加上路径}
+    3、abigen --abi=abi/SCHStake.abi --pkg=contract --out=contract/schStake/SCHStake.go
+    4、abigen --abi=abi/SCTToken_abi.abi --pkg=contract --out=contract/scToken/SCTToken.go
 ```
 # 项目结构
 ```

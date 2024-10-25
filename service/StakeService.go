@@ -30,13 +30,13 @@ func GetAccountBalance(c *gin.Context) {
 
 	if err != nil {
 		logs.Error("Error binding JSON:", err.Error())
-		myCtx.JSON(API.DataError, err.Error())
+		myCtx.JSON(API.DATA_ERROR, err.Error())
 		return
 	}
 
 	if errorMsg := dataValidate(accountReq); errorMsg != nil {
 		logs.Error("入参校验失败:", errorMsg)
-		myCtx.JSON(API.RequestParseError, "")
+		myCtx.JSON(API.DATA_VALIDATE_ERROR, "")
 		return
 	}
 
@@ -44,7 +44,7 @@ func GetAccountBalance(c *gin.Context) {
 	client, err1 := ethclient.Dial(accountReq.Url)
 	if err1 != nil {
 		logs.Error("获取以太坊节点失败:", err.Error())
-		myCtx.JSON(API.DataError, err.Error())
+		myCtx.JSON(API.DATA_ERROR, err.Error())
 		return
 	}
 
@@ -66,13 +66,13 @@ func AddPool(c *gin.Context) {
 
 	if err != nil {
 		logs.Error("Error binding JSON:", err.Error())
-		myCtx.JSON(API.DataError, err.Error())
+		myCtx.JSON(API.DATA_ERROR, err.Error())
 		return
 	}
 
 	if errorMsg := dataValidate(accountReq); errorMsg != nil {
 		logs.Error("入参校验失败:", errorMsg)
-		myCtx.JSON(API.RequestParseError, "")
+		myCtx.JSON(API.DATA_VALIDATE_ERROR, "")
 		return
 	}
 
@@ -80,7 +80,7 @@ func AddPool(c *gin.Context) {
 	client, err1 := ethclient.Dial(accountReq.Url)
 	if err1 != nil {
 		logs.Error("获取以太坊节点失败:", err.Error())
-		myCtx.JSON(API.DataError, err.Error())
+		myCtx.JSON(API.DATA_ERROR, err.Error())
 		return
 	}
 

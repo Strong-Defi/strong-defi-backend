@@ -4,6 +4,7 @@ import (
 	"github.com/ethereum/go-ethereum/log"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
+	"gorm.io/gorm"
 	"net/http"
 	API "strong-defi-backend/common"
 	"strong-defi-backend/config"
@@ -18,6 +19,11 @@ var (
 func New(d *model.Dao) {
 	dao = d
 	logs = config.Log
+}
+
+func NewDao(orm *gorm.DB) *model.Dao {
+	d := &model.Dao{Orm: orm}
+	return d
 }
 
 type CustomContext struct {
@@ -38,6 +44,16 @@ func (c *CustomContext) JSON(msg API.ApiResponseEnum, obj interface{}) {
 		Code: API.GetCode(msg),
 		Data: obj,
 		Msg:  API.GetMessage(msg),
+	}
+	c.Context.JSON(ok, response)
+}
+
+func (c *CustomContext) CustomJSON(msg API.ApiResponseEnum, desc string) {
+	ok := http.StatusOK
+	response := &Response{
+		Code: API.GetCode(msg),
+		Data: "",
+		Msg:  desc,
 	}
 	c.Context.JSON(ok, response)
 }

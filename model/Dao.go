@@ -1,6 +1,18 @@
 package model
 
-import "gorm.io/gorm"
+import (
+	"github.com/ethereum/go-ethereum/log"
+	"gorm.io/gorm"
+	"strong-defi-backend/config"
+)
+
+var (
+	logs log.Logger
+)
+
+func init() {
+	logs = config.Log
+}
 
 type Dao struct {
 	Orm *gorm.DB

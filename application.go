@@ -54,7 +54,9 @@ func initLogAndConf() {
 func dbInit() *gorm.DB {
 	dbConfig := config.Config.Db
 	db, err := gorm.Open(mysql.Open(dbConfig.Dsn), &gorm.Config{})
-
+	if err != nil {
+		panic(err)
+	}
 	s, err := db.DB()
 	if err != nil {
 		panic(err)
@@ -74,5 +76,6 @@ func dbInit() *gorm.DB {
 // 初始化业务server
 func serverInit(engine *gin.Engine, db *gorm.DB) {
 	server.AllInterface(engine)
-	service.New(&model.Dao{Orm: db})
+	dao := &model.Dao{Orm: db}
+	service.New(dao)
 }

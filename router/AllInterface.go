@@ -8,7 +8,7 @@ import (
 func AllInterface(r *gin.Engine) *gin.Engine {
 	e := r.Group("/gin")
 	{
-		e.GET("/login", service.GetContractDetail)
+		e.GET("/login", service.UserLogin)
 		e.GET("/register", service.GetContractInfo)
 
 	}

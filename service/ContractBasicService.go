@@ -13,7 +13,7 @@ func GetContractDetail(c *gin.Context) {
 	myCtx := &CustomContext{c}
 
 	/*查询数据库*/
-	user, _ := model.SelectUser(dao.ORM(), 23)
+	user, _ := model.SelectUser(dao.ORM(), "id=?", 23)
 
 	//
 	//return user
