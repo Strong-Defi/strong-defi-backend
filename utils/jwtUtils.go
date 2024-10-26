@@ -20,17 +20,18 @@ func CreateToken(userInfo string) (string, error) {
 }
 
 // ValidateToken 验证 JWT
-func ValidateToken(tokenString string) (*jwt.Token, error) {
-	return jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+func ValidateToken(tokenString string) error {
+	_, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		// 确保签名方法是预期的
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
 		return secretKey, nil
 	})
+	return err
 }
 
-func getUserInfo(token string) (userInfo string, err error) {
+func GetUserInfo(token string) (userInfo string, err error) {
 	parse, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
 		// 确保签名方法是预期的
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {

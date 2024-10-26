@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"github.com/golang-jwt/jwt"
 	"strong-defi-backend/utils"
 )
 
@@ -11,8 +10,7 @@ func main() {
 
 	fmt.Println(tokenString)
 
-	token, _ := utils.ValidateToken(tokenString)
-	claims := token.Claims.(jwt.MapClaims)
+	err := utils.ValidateToken(tokenString)
 
-	fmt.Println(claims["userInfo"])
+	fmt.Println(err)
 }

@@ -1,7 +1,6 @@
 package service
 
 import (
-	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	API "strong-defi-backend/common"
@@ -47,12 +46,16 @@ func UserLogin(c *gin.Context) {
 		/*转jwt*/
 		str, _ := utils.ToJson(scUser)
 
+		token, _ := utils.CreateToken(str)
 		//var userInfo *model.ScUser
-		userInfo1 := new(model.ScUser)
-		err = json.Unmarshal([]byte(str), userInfo1)
-		myCtx.JSON(API.SUCCESS, str)
+		//userInfo1 := new(model.ScUser)
+		//_ = json.Unmarshal([]byte(str), userInfo1)
+		myCtx.JSON(API.SUCCESS, token)
 	} else {
+		str, _ := utils.ToJson(scUser)
 
+		token, _ := utils.CreateToken(str)
+		myCtx.JSON(API.SUCCESS, token)
 	}
 
 }
