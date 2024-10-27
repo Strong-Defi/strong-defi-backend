@@ -6,12 +6,24 @@ import (
 )
 
 func AllInterface(r *gin.Engine) *gin.Engine {
-	e := r.Group("/gin", service.CheckToken)
+	e := r.Group("/gin/user", service.CheckToken)
 	{
 		e.GET("/login", service.UserLogin)
+		e.POST("/UserRegister", service.UserRegister)
 		e.GET("/register", service.GetContractInfo)
-
+		e.GET("/queryIsExist", service.QueryUserIsExist)
+		e.GET("/queryByWalletAddress", service.QueryByWalletAddress)
+		e.GET("/queryByTelephone", service.QueryByTelephone)
+		e.POST("/modifyUser", service.ModifyUser)
+		e.GET("/deleteUser", service.DeleteUser)
 	}
-	r.POST("/basicDemo", service.BasicDemo)
+
+	i := r.Group("/gin/stake", service.CheckToken)
+	{
+		i.POST("/getAccountBalance", service.GetAccountBalance)
+		i.POST("/addPool", service.AddPool)
+		i.POST("/getPoolBalance", service.GetPoolBalance)
+	}
+
 	return r
 }

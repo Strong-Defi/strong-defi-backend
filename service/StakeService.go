@@ -10,18 +10,7 @@ import (
 	"strong-defi-backend/utils"
 )
 
-//func GetContractInfo(c *gin.Context) {
-//	logs.Info("Info to Ethereum")
-//	logs.Error("Error to Ethereum")
-//	logs.Debug("Debug to Ethereum")
-//	logs.Warn("Warn to Ethereum")
-//	client, _ := ethclient.Dial("https://cloudflare-eth.com")
-//	if client == nil {
-//		logs.Error("Connected to Ethereum")
-//	}
-//}
-
-// 获取账号余额
+// GetAccountBalance 获取账号余额
 func GetAccountBalance(c *gin.Context) {
 	myCtx := &CustomContext{c}
 
@@ -58,6 +47,7 @@ func GetAccountBalance(c *gin.Context) {
 
 }
 
+// AddPool 添加用户池
 func AddPool(c *gin.Context) {
 	myCtx := &CustomContext{c}
 
@@ -91,5 +81,9 @@ func AddPool(c *gin.Context) {
 	float2 := utils.ConvertToMathFloat2(at, 18, 2)
 
 	myCtx.JSON(API.SUCCESS, float2)
+}
+
+// GetPoolBalance 获取用户池余额
+func GetPoolBalance(c *gin.Context) {
 
 }

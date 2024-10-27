@@ -9,6 +9,7 @@ type ApiResponseEnum string
 
 const (
 	SUCCESS             ApiResponseEnum = "SUCCESS"
+	USER_EXIST          ApiResponseEnum = "USER_EXIST"
 	DATA_VALIDATE_ERROR ApiResponseEnum = "DATA_VALIDATE_ERROR"
 	DATA_ERROR          ApiResponseEnum = "DATA_ERROR"
 	DATA_PARSE_ERROR    ApiResponseEnum = "DATA_PARSE_ERROR"
@@ -24,6 +25,7 @@ func GetMessage(enum ApiResponseEnum) string {
 		DATA_PARSE_ERROR:    "数据解析异常",
 		COMMOM_ERROR:        "通用错误",
 		NO_AUTH_ERROR:       "请登录后操作",
+		USER_EXIST:          "用户已存在",
 	}
 	if codeMap[enum] == "" {
 		return ""
@@ -39,6 +41,7 @@ func GetCode(enum ApiResponseEnum) string {
 		DATA_PARSE_ERROR:    "100003",
 		COMMOM_ERROR:        "100004",
 		NO_AUTH_ERROR:       "100005",
+		USER_EXIST:          "100006",
 	}
 	if codeMap[enum] == "" {
 		return ""

@@ -17,7 +17,7 @@ type ScUser struct {
 	UserCountry       string    `gorm:"type:varchar(128);not null" json:"user_country"`
 	UserAddress       string    `gorm:"type:varchar(128);not null" json:"user_address"`
 	Remark            string    `gorm:"type:varchar(512);not null" json:"remark"`
-	IsDeleted         bool      `gorm:"type:tinyint(1);default:0;not null" json:"is_deleted"`
+	IsDeleted         int       `gorm:"type:tinyint(1);default:0;not null" json:"is_deleted"`
 	MTime             time.Time `gorm:"type:datetime;default:CURRENT_TIMESTAMP;not null;autoUpdateTime" json:"mtime"`
 	CTime             time.Time `gorm:"type:datetime;default:CURRENT_TIMESTAMP;not null;autoCreateTime" json:"ctime"`
 }
@@ -26,16 +26,29 @@ func (ScUser) TableName() string {
 	return "sc_user"
 }
 
-func (d *Dao) SelectUser(where string, params ...interface{}) ([]ScUser, error) {
-	var scUser []ScUser
+func (d *Dao) SelectUser(where string, params ...interface{}) (scUser *ScUser, err error) {
+	scUser = new(ScUser)
 	result := d.ORM().Where(where, params).First(&scUser)
+
+	if result.Error != nil {
+		panic(result.Error)
+		return nil, result.Error
+	}
+	if result.RowsAffected == 0 {
+		return nil, nil
+	}
+	return scUser, nil
+}
+
+func (d *Dao) SelectUserList(where string, params ...interface{}) ([]ScUser, error) {
+	var scUser []ScUser
+	result := d.ORM().Where(where, params).Find(&scUser)
 
 	if result.Error != nil {
 		panic(result.Error)
 	}
 	return scUser, nil
 }
-
 func (d *Dao) SelectUserByWalletAddress(walletAddress string) (scUser *ScUser, err error) {
 	scUser = new(ScUser)
 	if err = d.ORM().Where("user_wallet_address = ?", walletAddress).First(&scUser).Error; err != nil {
@@ -90,7 +103,7 @@ func (d *Dao) Update(where string, values map[string]interface{}, queryArgs ...i
 	if result.Error != nil {
 		return 0, result.Error
 	} else {
-		return 1, nil
+		return int(result.RowsAffected), nil
 	}
 }
 
@@ -99,6 +112,13 @@ func (d *Dao) SaveScUser(user *ScUser) (err error) {
 	if err = d.ORM().Save(user).Error; err != nil {
 		logs.Error("dmDao.SaveContractEntity entity(%+v) error(%+v)", user, err)
 	}
-
 	return err
+}
+
+func (d *Dao) DeleteScUser(where string, params ...interface{}) error {
+	tx := d.ORM().Where(where, params).Delete(&ScUser{})
+	if tx.Error != nil {
+		return tx.Error
+	}
+	return nil
 }

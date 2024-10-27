@@ -47,7 +47,15 @@ func (c *CustomContext) JSON(msg API.ApiResponseEnum, obj interface{}) {
 	}
 	c.Context.JSON(ok, response)
 }
-
+func (c *CustomContext) JSON2(api API.ApiResponseEnum, msg string) {
+	ok := http.StatusOK
+	response := &Response{
+		Code: API.GetCode(api),
+		Data: "",
+		Msg:  msg,
+	}
+	c.Context.JSON(ok, response)
+}
 func (c *CustomContext) CustomJSON(msg API.ApiResponseEnum, desc string) {
 	ok := http.StatusOK
 	response := &Response{
