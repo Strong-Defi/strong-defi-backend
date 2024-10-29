@@ -1,6 +1,8 @@
-app:
+server:
   host: 127.0.0.1
   port: '8090'
+  adminAddress: "2344dsf"
+  deployAddress: "http://127.0.0.1:7545"
 log:
   isStdout: true
   filename: app.log    # 日志文件名

@@ -16,3 +16,12 @@ func ConvertToMathFloat2(var1 *big.Int, decimal int, point int) string {
 	result := new(big.Float).SetPrec(64).SetMode(big.ToNearestEven).Quo(value, big.NewFloat(math.Pow10(decimal)))
 	return result.Text('f', point)
 }
+
+// GetDefaultValueInt 设置三元运算数据
+func GetDefaultValueInt(condition bool, targetValue uint64, defaultValue uint64) uint64 {
+	if condition {
+		return defaultValue
+	} else {
+		return targetValue
+	}
+}

@@ -32,8 +32,12 @@ func InitConfig() {
 	logging.MaxSize = viper.GetInt("log.maxSize")
 	logging.MaxBackups = viper.GetInt("log.maxBackups")
 	logging.Compress = viper.GetBool("log.compress")
-
+	//启动地址
 	app.Port = viper.GetString("app.port")
+	//管理员部署地址
+	app.AdminAddress = viper.GetString("app.adminAddress")
+	//部署地址
+	app.DeployAddress = viper.GetString("app.deployAddress")
 
 	//db的配置
 	db.Dsn = viper.GetString("mysql.dsn")

@@ -1,5 +1,7 @@
 package resources
 
 type App struct {
-	Port string
+	Port          string
+	AdminAddress  string
+	DeployAddress string
 }
