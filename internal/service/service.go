@@ -1,27 +1,26 @@
 package service
 
 import (
+	//"github.com/Strong-Defi/strong-defi-backend/cmd"
+	API "github.com/Strong-Defi/strong-defi-backend/common"
+	"github.com/Strong-Defi/strong-defi-backend/internal/model"
 	"github.com/ethereum/go-ethereum/log"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"gorm.io/gorm"
 	"net/http"
-	API "strong-defi-backend/common"
-	"strong-defi-backend/config"
-	"strong-defi-backend/model"
-	"strong-defi-backend/resources"
 )
 
 var (
 	dao  *model.Dao
 	logs log.Logger
-	app  resources.App
+	app  main.App
 )
 
 func New(d *model.Dao) {
 	dao = d
-	logs = config.Log
-	app = config.Config.App
+	logs = main.Log
+	app = main.Config.App
 
 }
 

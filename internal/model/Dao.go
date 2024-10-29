@@ -1,9 +1,9 @@
 package model
 
 import (
+	"github.com/Strong-Defi/strong-defi-backend/cmd"
 	"github.com/ethereum/go-ethereum/log"
 	"gorm.io/gorm"
-	"strong-defi-backend/config"
 )
 
 var (
@@ -11,7 +11,7 @@ var (
 )
 
 func init() {
-	logs = config.Log
+	logs = main.Log
 }
 
 type Dao struct {

@@ -1,4 +1,4 @@
-package resources
+package main
 
 type App struct {
 	Port          string

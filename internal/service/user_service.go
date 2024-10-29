@@ -2,13 +2,14 @@ package service
 
 import (
 	"encoding/json"
+	API "github.com/Strong-Defi/strong-defi-backend/common"
+	"github.com/Strong-Defi/strong-defi-backend/internal/model"
+	"github.com/Strong-Defi/strong-defi-backend/internal/req"
+	"github.com/Strong-Defi/strong-defi-backend/pkg/authentication"
+	string2 "github.com/Strong-Defi/strong-defi-backend/pkg/string"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/copier"
 	"gorm.io/gorm"
-	API "strong-defi-backend/common"
-	"strong-defi-backend/model"
-	"strong-defi-backend/req"
-	"strong-defi-backend/utils"
 )
 
 func UserLogin(c *gin.Context) {
@@ -33,7 +34,7 @@ func UserLogin(c *gin.Context) {
 		scUser.UserPassword = "123456"
 		scUser.UserUID = "123456"
 		scUser.UserWalletAddress = userLoginReq.WalletAddress
-		scUser.UserName = utils.Generate16CharString("123")
+		scUser.UserName = string2.Generate16CharString("123")
 		err := dao.ORM().Transaction(func(tx *gorm.DB) (err error) {
 			dTx := NewDao(tx)
 			err = dTx.SaveScUser(scUser)
@@ -46,14 +47,14 @@ func UserLogin(c *gin.Context) {
 			return
 		}
 		/*转jwt*/
-		str, _ := utils.ToJson(scUser)
-		token, _ := utils.CreateToken(str)
+		str, _ := string2.ToJson(scUser)
+		token, _ := authentication.CreateToken(str)
 
 		myCtx.JSON(API.SUCCESS, token)
 	} else {
-		str, _ := utils.ToJson(scUser)
+		str, _ := string2.ToJson(scUser)
 
-		token, _ := utils.CreateToken(str)
+		token, _ := authentication.CreateToken(str)
 		myCtx.JSON(API.SUCCESS, token)
 	}
 
@@ -135,7 +136,7 @@ func UserRegister(c *gin.Context) {
 		return
 	}
 
-	scUser.UserUID = utils.Generate16CharString("123")
+	scUser.UserUID = string2.Generate16CharString("123")
 
 	err = dao.SaveScUser(&scUser)
 

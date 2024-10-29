@@ -2,8 +2,18 @@ package service
 
 import (
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/ethereum/go-ethereum/log"
 	"github.com/gin-gonic/gin"
 )
+
+type EtherService struct {
+	logs log.Logger
+}
+
+func NewEtherService() *EtherService {
+
+	return NewEtherService()
+}
 
 func GetContractInfo(c *gin.Context) {
 	logs.Info("Info to Ethereum")

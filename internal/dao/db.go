@@ -1,4 +1,4 @@
-package resources
+package dao
 
 type Db struct {
 	Dsn         string // 是否输出到控制台

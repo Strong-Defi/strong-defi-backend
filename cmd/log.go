@@ -1,11 +1,11 @@
-package config
+package main
 
 import (
+	c "github.com/Strong-Defi/strong-defi-backend/internal/dao"
 	"github.com/ethereum/go-ethereum/log"
 	"github.com/spf13/viper"
 	"gopkg.in/natefinch/lumberjack.v2"
 	"os"
-	c "strong-defi-backend/resources"
 )
 
 var (
@@ -14,15 +14,25 @@ var (
 )
 
 type ConfigInfo struct {
-	Logging c.Logging
-	App     c.App
+	Logging Logging
+	App     App
 	Db      c.Db
+}
+
+type Logging struct {
+	IsStdout   bool   // 是否输出到控制台
+	Filename   string //日志路径
+	Prefix     string //日志前缀
+	MaxSize    int
+	MaxBackups int
+	MaxAge     int
+	Compress   bool
 }
 
 func InitConfig() {
 
-	logging := c.Logging{}
-	app := c.App{}
+	logging := Logging{}
+	app := App{}
 	db := c.Db{}
 
 	logging.IsStdout = viper.GetBool("log.isStdout")

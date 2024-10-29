@@ -2,19 +2,20 @@ package service
 
 import (
 	"context"
+	"github.com/Strong-Defi/strong-defi-backend/internal/model"
+	"github.com/Strong-Defi/strong-defi-backend/internal/req"
+	"github.com/Strong-Defi/strong-defi-backend/pkg/math"
+	string2 "github.com/Strong-Defi/strong-defi-backend/pkg/string"
 	"github.com/ethereum/go-ethereum/crypto"
 
 	"encoding/json"
+	API "github.com/Strong-Defi/strong-defi-backend/common"
+	contract "github.com/Strong-Defi/strong-defi-backend/contract/schStake"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/gin-gonic/gin"
 	"math/big"
-	API "strong-defi-backend/common"
-	contract "strong-defi-backend/contract/schStake"
-	"strong-defi-backend/model"
-	"strong-defi-backend/req"
-	"strong-defi-backend/utils"
 )
 
 // GetAccountBalance 获取账号余额
@@ -48,7 +49,7 @@ func GetAccountBalance(c *gin.Context) {
 
 	at, _ := client.BalanceAt(context.Background(), address, nil)
 
-	float2 := utils.ConvertToMathFloat2(at, 18, 2)
+	float2 := math.ConvertToMathFloat2(at, 18, 2)
 
 	myCtx.JSON(API.SUCCESS, float2)
 
@@ -112,12 +113,12 @@ func AddPool(c *gin.Context) {
 	//获取交易签名函数
 	ecdsa, _ := crypto.HexToECDSA(addPoolReq.UserPrivateKey)
 	//创建签名函数
-	signer := utils.CreateSigner(ecdsa, chaiID)
+	signer := string2.CreateSigner(ecdsa, chaiID)
 	//token地址
 	tokenAddress := common.HexToAddress(addPoolReq.TokenAddress)
 
 	opts := &bind.TransactOpts{
-		GasLimit: utils.GetDefaultValueInt(addPoolReq.GasLimit == 0, addPoolReq.GasLimit, 21000),
+		GasLimit: math.GetDefaultValueInt(addPoolReq.GasLimit == 0, addPoolReq.GasLimit, 21000),
 		From:     address,
 		//设置nonce值进行防重处理
 		Nonce:  new(big.Int).SetInt64(int64(nonce)),

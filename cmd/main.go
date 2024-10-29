@@ -1,15 +1,14 @@
 package main
 
 import (
+	"github.com/Strong-Defi/strong-defi-backend/internal/model"
+	"github.com/Strong-Defi/strong-defi-backend/internal/router"
+	"github.com/Strong-Defi/strong-defi-backend/internal/service"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"os"
-	"strong-defi-backend/config"
-	"strong-defi-backend/model"
-	server "strong-defi-backend/router"
-	"strong-defi-backend/service"
 	"time"
 )
 
@@ -25,7 +24,7 @@ func main() {
 	serverInit(engine, db)
 	/*初始化数据库*/
 
-	readPortErr := os.Setenv("PORT", config.Config.App.Port)
+	readPortErr := os.Setenv("PORT", Config.App.Port)
 	if readPortErr != nil {
 		panic(readPortErr)
 	}
@@ -46,13 +45,13 @@ func initLogAndConf() {
 	if err != nil {
 		panic(err)
 	}
-	config.InitConfig()
-	config.InitLog()
+	InitConfig()
+	InitLog()
 }
 
 // 数据库初始化
 func dbInit() *gorm.DB {
-	dbConfig := config.Config.Db
+	dbConfig := Config.Db
 	db, err := gorm.Open(mysql.Open(dbConfig.Dsn), &gorm.Config{})
 	if err != nil {
 		panic(err)
