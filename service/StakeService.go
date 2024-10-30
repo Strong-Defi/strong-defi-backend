@@ -123,9 +123,15 @@ func AddPool(c *gin.Context) {
 		Nonce:  new(big.Int).SetInt64(int64(nonce)),
 		Signer: signer,
 	}
-	tx, _ := newContract.AddPool(opts, new(big.Int).SetInt64(int64(addPoolReq.Wight)),
+	tx, err := newContract.AddPool(opts, new(big.Int).SetInt64(int64(addPoolReq.Wight)),
 		tokenAddress, new(big.Int).SetInt64(int64(addPoolReq.MinStakeAmount)),
 		addPoolReq.IsUpdatePool, new(big.Int).SetInt64(int64(addPoolReq.UnStakeLockBlockNumber)))
+
+	if err != nil {
+		logs.Error("添加质押池报错。", err)
+		myCtx.JSON2(API.COMMOM_ERROR, "添加质押池报错")
+		return
+	}
 
 	myCtx.JSON(API.SUCCESS, "")
 }
