@@ -2,14 +2,16 @@ package service
 
 import (
 	"context"
-	"github.com/ethereum/go-ethereum/crypto"
-
+	"encoding/binary"
 	"encoding/json"
+	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/gin-gonic/gin"
 	"math/big"
+	"strings"
 	API "strong-defi-backend/common"
 	contract "strong-defi-backend/contract/schStake"
 	"strong-defi-backend/model"
@@ -105,7 +107,7 @@ func AddPool(c *gin.Context) {
 		myCtx.JSON2(API.COMMOM_ERROR, "获取nonce失败")
 		return
 	}
-	newContract, _ := contract.NewContract(address, client)
+	newContract, _ := contract.NewSCHStake(address, client)
 
 	//获取chaiID
 	chaiID, err := client.ChainID(context.Background())
@@ -127,11 +129,45 @@ func AddPool(c *gin.Context) {
 		tokenAddress, new(big.Int).SetInt64(int64(addPoolReq.MinStakeAmount)),
 		addPoolReq.IsUpdatePool, new(big.Int).SetInt64(int64(addPoolReq.UnStakeLockBlockNumber)))
 
+	//获取返回内容
+	receipt, _ := client.TransactionReceipt(context.Background(), tx.Hash())
+
+	if len(receipt.Logs) > 0 {
+		//异步存入质押池信息
+		go func() {
+			for _, vlog := range receipt.Logs {
+
+				parseABI, _ := abi.JSON(strings.NewReader(contract.SCHStakeMetaData.ABI))
+				//这是固定的，获取事件信息的，第一个是合约事件返回的结构，第二个是事件名称
+				var events []req.Event
+				err2 := parseABI.UnpackIntoInterface(&events, "AddPool", vlog.Data)
+
+				if err2 != nil {
+					logs.Error("获取nonce失败。", err)
+					return
+				}
+				pool := model.StakePool{
+					Weight:               int64(addPoolReq.Wight),
+					TokenAddress:         addPoolReq.TokenAddress,
+					MinStakeAmount:       uint64(addPoolReq.MinStakeAmount),
+					LockStakeBlockNumber: int64(addPoolReq.UnStakeLockBlockNumber),
+					//不知道events[0].Value[:]啥意思
+					PoolID: int64(binary.BigEndian.Uint64(events[0].Value[:])),
+					//创建人，保存的是地址
+					Creator: scUser.UserAddress,
+				}
+				//保存质押池信息
+				_ = dao.CreateStakePool(&pool)
+			}
+		}()
+	}
 	if err != nil {
 		logs.Error("添加质押池报错。", err)
 		myCtx.JSON2(API.COMMOM_ERROR, "添加质押池报错")
 		return
 	}
+
+	//获取交易收据
 
 	myCtx.JSON(API.SUCCESS, "")
 }

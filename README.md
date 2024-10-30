@@ -24,13 +24,19 @@ This is GIN strong-defi-backend.
      10、引入viper：go get github.com/spf13/viper，Viper是Go应用程序的完整配置解决方案，它支持:读取JSON, TOML, YAML, HCL, envfile和Java属性配置文件
      11、引入jwt：go get github.com/golang-jwt/jwt  
      12、引入fastjson：go get github.com/valyala/fastjson
-
-
+```
+# 合约编译命令
+```
 合约转换go命令：
-    1、通过hardhat进行编辑，注意，只需要复制abi那部分json即可
+    1、通过hardhat进行编辑，:solcjs --abi  --base-path . contracts/SCHStake.sol -o bin
     2、abigen --abi={abi的绝对路径} --contract=contract --out={输出的文件名，可以加上路径}
-    3、abigen --abi=abi/SCHStake.abi --pkg=contract --out=contract/schStake/SCHStake.go
-    4、abigen --abi=abi/SCTToken_abi.abi --pkg=contract --out=contract/scToken/SCTToken.go
+    3、abigen --abi=abi/contracts_SCHStake_sol_SCHStake.abi --pkg=contract --type SCHStake --out=contract/schStake/SCHStake.go
+    
+    go:generate abigen --sol abi/SCHStake.sol --pkg contract --out contract/schStake/SCHStake.go
+    4、abigen --abi=abi/contracts_SCToken_sol_SCToken.abi --pkg=contract --type SCTToken --out=contract/scToken/SCTToken.go
+    
+创建对应的网络的IPC文件：
+    1、在项目根目录下执行：geth --goerli --ipcpath /home/go-ethereum/goerli/geth.ipc，这里是个例子，创建的是goerli网络的IPC文件
 ```
 # 项目结构
 ```
