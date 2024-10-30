@@ -6,8 +6,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+var (
+	glog log.Logger
+)
+
 type EtherService struct {
-	logs log.Logger
 }
 
 func NewEtherService() *EtherService {
@@ -16,6 +19,7 @@ func NewEtherService() *EtherService {
 }
 
 func GetContractInfo(c *gin.Context) {
+	logs.Info()
 	logs.Info("Info to Ethereum")
 	logs.Error("Error to Ethereum")
 	logs.Debug("Debug to Ethereum")

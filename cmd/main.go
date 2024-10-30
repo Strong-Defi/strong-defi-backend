@@ -1,11 +1,11 @@
 package main
 
 import (
-	"github.com/Strong-Defi/strong-defi-backend/internal/model"
-	"github.com/Strong-Defi/strong-defi-backend/internal/router"
-	"github.com/Strong-Defi/strong-defi-backend/internal/service"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
+	"github.com/strong-defi/strong-defi-backend/internal/model"
+	"github.com/strong-defi/strong-defi-backend/internal/service"
+	"go.uber.org/zap"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"os"
@@ -45,8 +45,22 @@ func initLogAndConf() {
 	if err != nil {
 		panic(err)
 	}
+
 	InitConfig()
 	InitLog()
+}
+
+func InitZap() {
+	logger, _ := zap.NewProduction()
+	defer logger.Sync() // flushes buffer, if any
+	sugar := logger.Sugar()
+	sugar.Infow("failed to fetch URL",
+		// Structured context as loosely typed key-value pairs.
+		"url", url,
+		"attempt", 3,
+		"backoff", time.Second,
+	)
+	sugar.Infof("Failed to fetch URL: %s", url)
 }
 
 // 数据库初始化

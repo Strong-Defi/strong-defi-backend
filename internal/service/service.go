@@ -1,12 +1,12 @@
 package service
 
 import (
-	//"github.com/Strong-Defi/strong-defi-backend/cmd"
-	API "github.com/Strong-Defi/strong-defi-backend/common"
-	"github.com/Strong-Defi/strong-defi-backend/internal/model"
+	//"github.com/strong-defi/strong-defi-backend/cmd"
 	"github.com/ethereum/go-ethereum/log"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
+	API "github.com/strong-defi/strong-defi-backend/common"
+	"github.com/strong-defi/strong-defi-backend/internal/model"
 	"gorm.io/gorm"
 	"net/http"
 )

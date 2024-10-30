@@ -1,9 +1,9 @@
 package server
 
 import (
-	"github.com/Strong-Defi/strong-defi-backend/internal/middleware"
-	service2 "github.com/Strong-Defi/strong-defi-backend/internal/service"
 	"github.com/gin-gonic/gin"
+	"github.com/strong-defi/strong-defi-backend/internal/middleware"
+	service2 "github.com/strong-defi/strong-defi-backend/internal/service"
 )
 
 func AllInterface(r *gin.Engine) *gin.Engine {

@@ -1,7 +1,7 @@
 package dao
 
 import (
-	"github.com/Strong-Defi/strong-defi-backend/internal/model"
+	"github.com/strong-defi/strong-defi-backend/internal/model"
 	"gorm.io/gorm"
 )
 

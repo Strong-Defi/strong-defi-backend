@@ -1,9 +1,9 @@
 package main
 
 import (
-	c "github.com/Strong-Defi/strong-defi-backend/internal/dao"
 	"github.com/ethereum/go-ethereum/log"
 	"github.com/spf13/viper"
+	c "github.com/strong-defi/strong-defi-backend/internal/dao"
 	"gopkg.in/natefinch/lumberjack.v2"
 	"os"
 )
@@ -63,7 +63,7 @@ func InitConfig() {
 /**
  * 初始化日志
  */
-func InitLog() {
+func InitLog() log.Logger {
 	/*通过lumberjack，引入日志文件*/
 	filename := ""                      // 日志文件名
 	maxSize := 1                        // 每个日志文件的最大大小（MB）
@@ -108,5 +108,5 @@ func InitLog() {
 		logHandle = log.NewTerminalHandlerWithLevel(logFile, log.LvlInfo, true)
 	}
 
-	Log = log.NewLogger(logHandle)
+	return log.NewLogger(logHandle)
 }

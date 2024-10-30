@@ -1,10 +1,10 @@
 package middleware
 
 import (
-	API "github.com/Strong-Defi/strong-defi-backend/common"
-	"github.com/Strong-Defi/strong-defi-backend/internal/service"
-	"github.com/Strong-Defi/strong-defi-backend/pkg/authentication"
 	"github.com/gin-gonic/gin"
+	API "github.com/strong-defi/strong-defi-backend/common"
+	"github.com/strong-defi/strong-defi-backend/internal/service"
+	"github.com/strong-defi/strong-defi-backend/pkg/authentication"
 	"strings"
 )
 

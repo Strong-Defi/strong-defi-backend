@@ -1,7 +1,6 @@
 package model
 
 import (
-	"github.com/Strong-Defi/strong-defi-backend/cmd"
 	"github.com/ethereum/go-ethereum/log"
 	"gorm.io/gorm"
 )

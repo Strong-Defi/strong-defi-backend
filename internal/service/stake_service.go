@@ -2,19 +2,19 @@ package service
 
 import (
 	"context"
-	"github.com/Strong-Defi/strong-defi-backend/internal/model"
-	"github.com/Strong-Defi/strong-defi-backend/internal/req"
-	"github.com/Strong-Defi/strong-defi-backend/pkg/math"
-	string2 "github.com/Strong-Defi/strong-defi-backend/pkg/string"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/strong-defi/strong-defi-backend/internal/model"
+	"github.com/strong-defi/strong-defi-backend/internal/req"
+	"github.com/strong-defi/strong-defi-backend/pkg/math"
+	string2 "github.com/strong-defi/strong-defi-backend/pkg/string"
 
 	"encoding/json"
-	API "github.com/Strong-Defi/strong-defi-backend/common"
-	contract "github.com/Strong-Defi/strong-defi-backend/contract/schStake"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/gin-gonic/gin"
+	API "github.com/strong-defi/strong-defi-backend/common"
+	contract "github.com/strong-defi/strong-defi-backend/contract/schStake"
 	"math/big"
 )
 
