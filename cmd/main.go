@@ -1,14 +1,18 @@
 package main
 
 import (
+	"github.com/ethereum/go-ethereum/log"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
 	"github.com/strong-defi/strong-defi-backend/internal/model"
+	server "github.com/strong-defi/strong-defi-backend/internal/router"
 	"github.com/strong-defi/strong-defi-backend/internal/service"
 	"go.uber.org/zap"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 )
 
@@ -31,6 +35,23 @@ func main() {
 	err := engine.Run()
 	if err != nil {
 		return
+	}
+
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, syscall.SIGHUP, syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT)
+	for {
+		s := <-c
+		log.Info("get a signal %s", s.String())
+		switch s {
+		case syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT:
+			closeFunc()
+			log.Info("auth exit")
+			time.Sleep(time.Second)
+			return
+		case syscall.SIGHUP:
+		default:
+			return
+		}
 	}
 }
 

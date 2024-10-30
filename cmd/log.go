@@ -9,8 +9,8 @@ import (
 )
 
 var (
-	Log    log.Logger
-	Config = &ConfigInfo{}
+	Log log.Logger
+	//Config = &ConfigInfo{}
 )
 
 type ConfigInfo struct {

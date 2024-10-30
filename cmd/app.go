@@ -5,3 +5,10 @@ type App struct {
 	AdminAddress  string
 	DeployAddress string
 }
+
+type Config struct {
+}
+
+func NewApp() *App {
+	return &App{}
+}

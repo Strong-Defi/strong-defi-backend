@@ -12,6 +12,13 @@ import (
 	"gorm.io/gorm"
 )
 
+type UserService struct {
+}
+
+func NewUserService() *UserService {
+	return &UserService{}
+}
+
 func UserLogin(c *gin.Context) {
 
 	myCtx := &CustomContext{c}

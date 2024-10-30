@@ -18,6 +18,17 @@ import (
 	"math/big"
 )
 
+type StakeService struct {
+}
+
+func NewStakeService() *StakeService {
+	return &StakeService{}
+}
+
+func T1() {
+	contract.SCHStakeMetaData
+}
+
 // GetAccountBalance 获取账号余额
 func GetAccountBalance(c *gin.Context) {
 	myCtx := &CustomContext{c}
