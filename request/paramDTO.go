@@ -1,4 +1,4 @@
-package req
+package request
 
 type Event struct {
 	Key   [32]byte

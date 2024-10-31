@@ -22,7 +22,7 @@ func AllInterface(r *gin.Engine) *gin.Engine {
 	{
 		i.POST("/getAccountBalance", service.GetAccountBalance)
 		i.POST("/addPool", service.AddPool)
-		i.POST("/getPoolBalance", service.GetPoolBalance)
+		i.POST("/userStake", service.UserStake)
 	}
 
 	return r

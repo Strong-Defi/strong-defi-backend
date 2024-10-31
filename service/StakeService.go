@@ -15,7 +15,7 @@ import (
 	API "strong-defi-backend/common"
 	contract "strong-defi-backend/contract/schStake"
 	"strong-defi-backend/model"
-	"strong-defi-backend/req"
+	"strong-defi-backend/request"
 	"strong-defi-backend/utils"
 )
 
@@ -23,7 +23,7 @@ import (
 func GetAccountBalance(c *gin.Context) {
 	myCtx := &CustomContext{c}
 
-	var accountReq req.AccountBalanceReq
+	var accountReq request.AccountBalanceReq
 	err := myCtx.ShouldBindJSON(&accountReq)
 
 	if err != nil {
@@ -76,7 +76,7 @@ func AddPool(c *gin.Context) {
 		return
 	}
 
-	var addPoolReq req.AddPoolReq
+	var addPoolReq request.AddPoolReq
 	err := myCtx.ShouldBindJSON(&addPoolReq)
 
 	if err != nil {
@@ -139,7 +139,7 @@ func AddPool(c *gin.Context) {
 
 				parseABI, _ := abi.JSON(strings.NewReader(contract.SCHStakeMetaData.ABI))
 				//这是固定的，获取事件信息的，第一个是合约事件返回的结构，第二个是事件名称
-				var events []req.Event
+				var events []request.Event
 				err2 := parseABI.UnpackIntoInterface(&events, "AddPool", vlog.Data)
 
 				if err2 != nil {
@@ -172,7 +172,24 @@ func AddPool(c *gin.Context) {
 	myCtx.JSON(API.SUCCESS, "")
 }
 
-// GetPoolBalance 获取用户池余额
-func GetPoolBalance(c *gin.Context) {
+// UserStake 用户质押
+func UserStake(c *gin.Context) {
+	myCtx := &CustomContext{c}
+
+	var req request.UserStakeReq
+
+	err := myCtx.ShouldBindJSON(&req)
+
+	if err != nil {
+		logs.Error("Error binding JSON:", err.Error())
+		myCtx.JSON(API.DATA_ERROR, err.Error())
+		return
+	}
+
+	if errorMsg := dataValidate(req); errorMsg != nil {
+		logs.Error("入参校验失败:", errorMsg)
+		myCtx.JSON(API.DATA_VALIDATE_ERROR, "")
+		return
+	}
 
 }

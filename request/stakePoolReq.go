@@ -1,4 +1,4 @@
-package req
+package request
 
 type AccountBalanceReq struct {
 	/*需要节点的地址*/
@@ -24,4 +24,8 @@ type AddPoolReq struct {
 
 	//用户私钥，暂时这样写，回头看能不能从哪里获取，或者进行加密处理
 	UserPrivateKey string `json:"userPrivateKey"`
+}
+
+// 用户质押请求
+type UserStakeReq struct {
 }

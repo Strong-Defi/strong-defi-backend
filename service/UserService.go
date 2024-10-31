@@ -7,14 +7,14 @@ import (
 	"gorm.io/gorm"
 	API "strong-defi-backend/common"
 	"strong-defi-backend/model"
-	"strong-defi-backend/req"
+	"strong-defi-backend/request"
 	"strong-defi-backend/utils"
 )
 
 func UserLogin(c *gin.Context) {
 
 	myCtx := &CustomContext{c}
-	var userLoginReq req.UserLoginReq
+	var userLoginReq request.UserLoginReq
 	if err := myCtx.ShouldBindJSON(&userLoginReq); err != nil {
 		logs.Error("Error binding JSON:", err.Error())
 		myCtx.JSON(API.DATA_VALIDATE_ERROR, "")
@@ -106,7 +106,7 @@ func QueryByTelephone(c *gin.Context) {
 
 func UserRegister(c *gin.Context) {
 	myCtx := &CustomContext{c}
-	var userRegister req.UserRegister
+	var userRegister request.UserRegister
 	if err := myCtx.ShouldBindJSON(&userRegister); err != nil {
 		logs.Error("Error binding JSON:", err.Error())
 		myCtx.JSON(API.DATA_VALIDATE_ERROR, "")
@@ -151,7 +151,7 @@ func UserRegister(c *gin.Context) {
 func ModifyUser(c *gin.Context) {
 
 	myCtx := &CustomContext{c}
-	var modifyUser req.ModifyUserReq
+	var modifyUser request.ModifyUserReq
 	if err := myCtx.ShouldBindJSON(&modifyUser); err != nil {
 		logs.Error("Error binding JSON:", err.Error())
 		myCtx.JSON(API.DATA_VALIDATE_ERROR, "")
