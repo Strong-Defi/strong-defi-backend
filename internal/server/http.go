@@ -15,13 +15,16 @@ type HttpServer struct {
 	engine *gin.Engine
 }
 
-// NewHttpServer creates a new http server
-func NewHttpServer(log plog.Logger, engine *gin.Engine, service service.Service) (server *HttpServer, cancel func(), err error) {
+func (s *HttpServer) Start() {
+	s.engine.Run()
+}
 
+// NewHttpServer creates a new http server
+func NewHttpServer(log plog.Logger, engine *gin.Engine, service *service.Service) (server *HttpServer, cancel func(), err error) {
+	// TODO cors
 	server = &HttpServer{
 		engine: engine,
 	}
-	// middleware
 	RegisterRouter(engine, service.UserService, service.StakeService, service.EtherService)
 	return server, func() {
 		log.Info("http server shutdown")

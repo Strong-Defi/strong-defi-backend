@@ -9,7 +9,6 @@ type EtherService struct {
 }
 
 func NewEtherService(dao *dao.Dao) *EtherService {
-	log.Info("NewEtherService is called")
 	return &EtherService{
 		dao: dao,
 	}

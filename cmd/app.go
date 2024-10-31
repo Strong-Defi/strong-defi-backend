@@ -13,7 +13,7 @@ type App struct {
 
 type SysConfig struct {
 	Server *Server     `yaml:"server"`
-	Log    *log.Config `yaml:"logger"`
+	Logger *log.Config `yaml:"logger"`
 	Mysql  *db.Config  `yaml:"mysql"`
 }
 
@@ -26,7 +26,7 @@ type Server struct {
 
 func InitApp(sysConfig *SysConfig) *App {
 	app := &App{
-		Logger:    InitLog(sysConfig.Log),
+		Logger:    InitLog(sysConfig.Logger),
 		SysConfig: sysConfig,
 	}
 	return app

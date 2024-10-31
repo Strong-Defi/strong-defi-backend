@@ -2,8 +2,10 @@ package main
 
 import (
 	"github.com/ethereum/go-ethereum/log"
+	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
 	"github.com/strong-defi/strong-defi-backend/internal/server"
+	service "github.com/strong-defi/strong-defi-backend/internal/service"
 	"os"
 	"os/signal"
 	"syscall"
@@ -22,15 +24,26 @@ func init() {
 func main() {
 
 	c := make(chan os.Signal, 1)
-	server.NewHttpServer(app.SysConfig).Run()
+	engine := gin.Default()
+	svc, cancel, err := service.InitService(app.Logger, app.SysConfig.Mysql)
+	if err != nil {
+		panic(err)
+	}
+	httpServer, f, err := server.NewHttpServer(app.Logger, engine, svc)
+	if err != nil {
+		panic(err)
+	}
+	go httpServer.Start()
+	// 优雅关闭
 	signal.Notify(c, syscall.SIGHUP, syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT)
 	for {
 		s := <-c
 		log.Info("get a signal %s", s.String())
 		switch s {
 		case syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT:
-			//closeFunc()
-			log.Info("auth exit")
+			cancel()
+			f()
+			log.Info("main exit")
 			time.Sleep(time.Second)
 			return
 		case syscall.SIGHUP:
