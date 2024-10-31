@@ -31,3 +31,63 @@ logger:
     max_backups: 3
     max_age: 28
     compress: true
+
+chains:
+  ethereum:
+    chain_id: 1
+    name: "Ethereum Mainnet"
+    endpoints:
+      - "https://mainnet.infura.io/v3"
+      - "https://eth-mainnet.g.alchemy.com/v2"
+    api_keys:
+      - "your-infura-key"
+      - "your-alchemy-key"
+    retry:
+      max_retries: 3
+      retry_delay: 2s
+      health_check_interval: 30s
+  sepolia:
+    chain_id: 11155111
+    name: "Sepolia Testnet"
+    endpoints:
+      - "https://sepolia.infura.io/v3"
+      - "https://eth-sepolia.g.alchemy.com/v2"
+    api_keys:
+      - "your-infura-key"
+      - "your-alchemy-key"
+    retry:
+      max_retries: 3
+      retry_delay: 1s
+      health_check_interval: 15s
+  polygon:
+    chain_id: 137
+    name: "Polygon Mainnet"
+    endpoints:
+      - "https://polygon-rpc.com"
+      - "https://rpc-mainnet.matic.network"
+    retry:
+      max_retries: 3
+      retry_delay: 1s
+      health_check_interval: 15s
+
+  bsc:
+    chain_id: 56
+    name: "Binance Smart Chain"
+    endpoints:
+      - "https://bsc-dataseed1.binance.org"
+      - "https://bsc-dataseed2.binance.org"
+    retry:
+      max_retries: 3
+      retry_delay: 1s
+      health_check_interval: 20s
+
+  arbitrum:
+    chain_id: 42161
+    name: "Arbitrum One"
+    endpoints:
+      - "https://arb1.arbitrum.io/rpc"
+    api_keys: []
+    retry:
+      max_retries: 3
+      retry_delay: 2s
+      health_check_interval: 30s 

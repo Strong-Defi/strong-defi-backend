@@ -25,7 +25,7 @@ func main() {
 
 	c := make(chan os.Signal, 1)
 	engine := gin.Default()
-	svc, cancel, err := service.InitService(app.Logger, app.SysConfig.Mysql)
+	svc, cancel, err := service.InitService(app.Logger, app.SysConfig.Mysql, app.SysConfig.Chains)
 	if err != nil {
 		panic(err)
 	}

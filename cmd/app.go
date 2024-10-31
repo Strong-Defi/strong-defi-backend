@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/strong-defi/strong-defi-backend/pkg/db"
+	"github.com/strong-defi/strong-defi-backend/pkg/ethereum"
 	"github.com/strong-defi/strong-defi-backend/pkg/log"
 )
 
@@ -12,9 +13,10 @@ type App struct {
 }
 
 type SysConfig struct {
-	Server *Server     `yaml:"server"`
-	Logger *log.Config `yaml:"logger"`
-	Mysql  *db.Config  `yaml:"mysql"`
+	Server *Server          `yaml:"server"`
+	Logger *log.Config      `yaml:"logger"`
+	Mysql  *db.Config       `yaml:"mysql"`
+	Chains *ethereum.Config `yaml:"chains"`
 }
 
 type Server struct {

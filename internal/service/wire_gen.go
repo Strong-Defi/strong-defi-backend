@@ -10,13 +10,14 @@ import (
 	"github.com/google/wire"
 	"github.com/strong-defi/strong-defi-backend/internal/dao"
 	"github.com/strong-defi/strong-defi-backend/pkg/db"
+	"github.com/strong-defi/strong-defi-backend/pkg/ethereum"
 	log2 "github.com/strong-defi/strong-defi-backend/pkg/log"
 )
 
 // Injectors from wire.go:
 
-func InitService(logger log2.Logger, config *db.Config) (*Service, func(), error) {
-	daoDao := dao.New(logger, config)
+func InitService(logger log2.Logger, config *db.Config, chainConfig *ethereum.Config) (*Service, func(), error) {
+	daoDao := dao.New(logger, config, chainConfig)
 	etherService := NewEtherService(daoDao)
 	stakeService := NewStakeService(daoDao)
 	userService := NewUserService(daoDao)

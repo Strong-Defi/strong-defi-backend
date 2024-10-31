@@ -24,6 +24,10 @@ This is GIN strong-defi-backend.
      10、引入viper：go get github.com/spf13/viper，Viper是Go应用程序的完整配置解决方案，它支持:读取JSON, TOML, YAML, HCL, envfile和Java属性配置文件
      11、引入jwt：go get github.com/golang-jwt/jwt  
      12、引入fastjson：go get github.com/valyala/fastjson
+     13、引入wire处理依赖注入: 
+        本地安装wire命令行: go install github.com/google/wire/cmd/wire@latest
+        在项目根目录下执行命令: wire ./...
+         
 
 
 合约转换go命令：

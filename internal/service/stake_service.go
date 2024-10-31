@@ -19,6 +19,10 @@ import (
 	"math/big"
 )
 
+var (
+	AdminAddress = "0x0"
+)
+
 type StakeService struct {
 	dao *dao.Dao
 }
@@ -76,11 +80,11 @@ func (svc *StakeService) AddPool(c *gin.Context) {
 		return
 	}
 
-	//如果不是管理员，不允许添加质押池 TODO
-	//if scUser.UserWalletAddress != app.AdminAddress {
-	//	myCtx.JSON2(API.COMMOM_ERROR, "非管理员不允许操作质押池")
-	//	return
-	//}
+	//如果不是管理员，不允许添加质押池
+	if scUser.UserWalletAddress != AdminAddress {
+		myCtx.JSON2(API.COMMOM_ERROR, "非管理员不允许操作质押池")
+		return
+	}
 
 	var addPoolReq req.AddPoolReq
 	err := myCtx.ShouldBindJSON(&addPoolReq)
