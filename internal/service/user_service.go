@@ -2,39 +2,41 @@ package service
 
 import (
 	"encoding/json"
+	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/copier"
 	API "github.com/strong-defi/strong-defi-backend/common"
+	"github.com/strong-defi/strong-defi-backend/internal/dao"
 	"github.com/strong-defi/strong-defi-backend/internal/model"
 	"github.com/strong-defi/strong-defi-backend/internal/req"
 	"github.com/strong-defi/strong-defi-backend/pkg/authentication"
 	string2 "github.com/strong-defi/strong-defi-backend/pkg/string"
-	"gorm.io/gorm"
 )
 
 type UserService struct {
+	dao *dao.Dao
 }
 
-func NewUserService() *UserService {
-	return &UserService{}
+func NewUserService(d *dao.Dao) *UserService {
+	return &UserService{dao: d}
 }
 
-func UserLogin(c *gin.Context) {
-
-	myCtx := &CustomContext{c}
+func (svc *UserService) UserLogin(c *gin.Context) {
+	var err error
+	myCtx := &Context{c}
 	var userLoginReq req.UserLoginReq
 	if err := myCtx.ShouldBindJSON(&userLoginReq); err != nil {
-		logs.Error("Error binding JSON:", err.Error())
+		log.Error("Error binding JSON:", err.Error())
 		myCtx.JSON(API.DATA_VALIDATE_ERROR, "")
 		return
 	}
 	if errorMsg := dataValidate(userLoginReq); errorMsg != nil {
-		logs.Error("入参校验失败:", errorMsg)
+		log.Error("入参校验失败:", errorMsg)
 		myCtx.JSON(API.DATA_ERROR, "")
 		return
 	}
 
-	scUser, _ := dao.SelectUserByWalletAddress(userLoginReq.WalletAddress)
+	scUser, _ := svc.dao.SelectUserByWalletAddress(userLoginReq.WalletAddress)
 
 	if scUser == nil {
 		scUser = &model.ScUser{}
@@ -42,15 +44,9 @@ func UserLogin(c *gin.Context) {
 		scUser.UserUID = "123456"
 		scUser.UserWalletAddress = userLoginReq.WalletAddress
 		scUser.UserName = string2.Generate16CharString("123")
-		err := dao.ORM().Transaction(func(tx *gorm.DB) (err error) {
-			dTx := NewDao(tx)
-			err = dTx.SaveScUser(scUser)
-			if err != nil {
-				return err
-			}
-			return nil
-		})
+		err = svc.dao.SaveScUser(scUser)
 		if err != nil {
+			log.Error("用户保存失败。", err)
 			return
 		}
 		/*转jwt*/
@@ -68,12 +64,12 @@ func UserLogin(c *gin.Context) {
 }
 
 // QueryUserIsExist 查询用户是否已经注册
-func QueryUserIsExist(c *gin.Context) {
+func (svc *UserService) QueryUserIsExist(c *gin.Context) {
 
-	myCtx := &CustomContext{c}
+	myCtx := &Context{c}
 	userName := myCtx.Query("userName")
 
-	user, _ := dao.SelectUser("user_name=? and is_deleted=0", userName)
+	user, _ := svc.dao.SelectUser("user_name=? and is_deleted=0", userName)
 
 	if user == nil {
 		myCtx.JSON(API.SUCCESS, "")
@@ -82,14 +78,14 @@ func QueryUserIsExist(c *gin.Context) {
 	}
 }
 
-func QueryByWalletAddress(c *gin.Context) {
-	myCtx := &CustomContext{c}
+func (svc *UserService) QueryByWalletAddress(c *gin.Context) {
+	myCtx := &Context{c}
 
 	walletAddress := myCtx.Query("walletAddress")
 
-	logs.Warn("通过地址查询用户，入参为：", walletAddress)
+	log.Warn("通过地址查询用户，入参为：", walletAddress)
 
-	user, _ := dao.SelectUser("user_wallet_address=? and is_deleted=0", walletAddress)
+	user, _ := svc.dao.SelectUser("user_wallet_address=? and is_deleted=0", walletAddress)
 
 	if user == nil {
 		myCtx.JSON(API.SUCCESS, "")
@@ -98,12 +94,12 @@ func QueryByWalletAddress(c *gin.Context) {
 	}
 }
 
-func QueryByTelephone(c *gin.Context) {
-	myCtx := &CustomContext{c}
+func (svc *UserService) QueryByTelephone(c *gin.Context) {
+	myCtx := &Context{c}
 
 	telephone := myCtx.Query("telephone")
-	logs.Warn("通过电话号码用户，入参为：", telephone)
-	user, _ := dao.SelectUser("user_telephone=? and is_deleted=0", telephone)
+	log.Warn("通过电话号码用户，入参为：", telephone)
+	user, _ := svc.dao.SelectUser("user_telephone=? and is_deleted=0", telephone)
 
 	if user == nil {
 		myCtx.JSON(API.SUCCESS, "")
@@ -112,16 +108,16 @@ func QueryByTelephone(c *gin.Context) {
 	}
 }
 
-func UserRegister(c *gin.Context) {
-	myCtx := &CustomContext{c}
+func (svc *UserService) UserRegister(c *gin.Context) {
+	myCtx := &Context{c}
 	var userRegister req.UserRegister
 	if err := myCtx.ShouldBindJSON(&userRegister); err != nil {
-		logs.Error("Error binding JSON:", err.Error())
+		log.Error("Error binding JSON:", err.Error())
 		myCtx.JSON(API.DATA_VALIDATE_ERROR, "")
 		return
 	}
 	if errorMsg := dataValidate(userRegister); errorMsg != nil {
-		logs.Error("入参校验失败:", errorMsg)
+		log.Error("入参校验失败:", errorMsg)
 		myCtx.JSON(API.DATA_ERROR, "")
 		return
 	}
@@ -130,12 +126,12 @@ func UserRegister(c *gin.Context) {
 	err := copier.Copy(&scUser, &userRegister)
 
 	if err != nil {
-		logs.Error("数据转化异常。", err)
+		log.Error("数据转化异常。", err)
 		myCtx.JSON(API.DATA_ERROR, "服务异常")
 		return
 	}
 	/*首先查询有没有用户，如果有就返回，没有就创建*/
-	user, _ := dao.SelectUser(" (user_telephone=? or user_wallet_address=? or user_name=? ) and is_deleted=0 ",
+	user, _ := svc.dao.SelectUser(" (user_telephone=? or user_wallet_address=? or user_name=? ) and is_deleted=0 ",
 		scUser.UserTelephone, scUser.UserWalletAddress, scUser.UserName)
 
 	if user != nil {
@@ -145,10 +141,10 @@ func UserRegister(c *gin.Context) {
 
 	scUser.UserUID = string2.Generate16CharString("123")
 
-	err = dao.SaveScUser(&scUser)
+	err = svc.dao.SaveScUser(&scUser)
 
 	if err != nil {
-		logs.Error("用户保存失败。", err)
+		log.Error("用户保存失败。", err)
 		myCtx.JSON(API.DATA_ERROR, "")
 		return
 	} else {
@@ -156,24 +152,24 @@ func UserRegister(c *gin.Context) {
 	}
 }
 
-func ModifyUser(c *gin.Context) {
+func (svc *UserService) ModifyUser(c *gin.Context) {
 
-	myCtx := &CustomContext{c}
+	myCtx := &Context{c}
 	var modifyUser req.ModifyUserReq
 	if err := myCtx.ShouldBindJSON(&modifyUser); err != nil {
-		logs.Error("Error binding JSON:", err.Error())
+		log.Error("Error binding JSON:", err.Error())
 		myCtx.JSON(API.DATA_VALIDATE_ERROR, "")
 		return
 	}
 	if errorMsg := dataValidate(modifyUser); errorMsg != nil {
-		logs.Error("入参校验失败:", errorMsg)
+		log.Error("入参校验失败:", errorMsg)
 		myCtx.JSON(API.DATA_ERROR, "")
 		return
 	}
 
-	logs.Info("修改用户信息入参为：", modifyUser)
+	log.Info("修改用户信息入参为：", modifyUser)
 
-	user, _ := dao.SelectUser("id=? and is_deleted=0", modifyUser.UserId)
+	user, _ := svc.dao.SelectUser("id=? and is_deleted=0", modifyUser.UserId)
 
 	if user == nil {
 		myCtx.JSON2(API.DATA_ERROR, "用户不存在")
@@ -229,9 +225,9 @@ func ModifyUser(c *gin.Context) {
 		return
 	}
 
-	rowNum, err := dao.Update("id=?", updateValue, modifyUser.UserId)
+	rowNum, err := svc.dao.Update("id=?", updateValue, modifyUser.UserId)
 	if err != nil || rowNum == 0 {
-		logs.Error("用户修改信息失败，", err)
+		log.Error("用户修改信息失败，", err)
 		myCtx.JSON2(API.COMMOM_ERROR, "用户修改信息失败")
 		return
 	}
@@ -239,32 +235,43 @@ func ModifyUser(c *gin.Context) {
 }
 
 // DeleteUser 注销用户
-func DeleteUser(c *gin.Context) {
-	myCtx := &CustomContext{c}
+func (svc *UserService) DeleteUser(c *gin.Context) {
+	myCtx := &Context{c}
 	value, exists := myCtx.Get(API.TOKEN_KEY)
 	var userInfo model.ScUser
 	if exists {
 		err := json.Unmarshal([]byte(value.(string)), &userInfo)
 		if err != nil {
-			logs.Error("解析用户信息失败。", err)
+			log.Error("解析用户信息失败。", err)
 			myCtx.JSON(API.COMMOM_ERROR, "解析用户信息失败")
 			return
 		}
 	}
 
 	userId := myCtx.Query("uid")
-	logs.Info("注销用户，入参为：", userId)
+	log.Info("注销用户，入参为：", userId)
 
 	if userId != userInfo.UserUID {
 		myCtx.JSON(API.COMMOM_ERROR, "无权注销别人的账号")
 		return
 	}
-	err := dao.DeleteScUser("user_uid=?", userId)
+	err := svc.dao.DeleteScUser("user_uid=?", userId)
 
 	if err != nil {
-		logs.Error("注销失败。", err)
+		log.Error("注销失败。", err)
 		myCtx.JSON2(API.COMMOM_ERROR, "注销失败")
 		return
 	}
 	myCtx.JSON(API.SUCCESS, "")
+}
+func (svc *UserService) GetContractInfo(ctx *gin.Context) {
+
+	log.Info("Info to Ethereum")
+	log.Error("Error to Ethereum")
+	log.Debug("Debug to Ethereum")
+	log.Warn("Warn to Ethereum")
+	client, _ := ethclient.Dial("https://cloudflare-eth.com")
+	if client == nil {
+		log.Error("Connected to Ethereum")
+	}
 }

@@ -4,43 +4,46 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	API "github.com/strong-defi/strong-defi-backend/common"
-	"github.com/strong-defi/strong-defi-backend/internal/dao"
-	"github.com/strong-defi/strong-defi-backend/internal/model"
-	"go.uber.org/zap"
-	"gorm.io/gorm"
+	plog "github.com/strong-defi/strong-defi-backend/pkg/log"
 	"net/http"
 )
 
 var (
-	logs zap.Logger
-	//app  main.App
+	log plog.Logger
 )
 
-//func New(d *model.Dao) {
-//	dao = d
-//	logs = main.Log
-//	app = main.Config.App
-//
-//}
-
-func NewDao(orm *gorm.DB) *model.Dao {
-	d := &model.Dao{Orm: orm}
-	return d
+type Service struct {
+	EtherService *EtherService
+	StakeService *StakeService
+	UserService  *UserService
 }
 
-type CustomContext struct {
+func New(logger plog.Logger,
+	etherService *EtherService,
+	stakeService *StakeService,
+	userService *UserService) *Service {
+	log = logger.With("module", "service")
+	return &Service{
+		EtherService: etherService,
+		StakeService: stakeService,
+		UserService:  userService,
+	}
+
+}
+
+type Context struct {
 	*gin.Context
 }
 
-/*封装返回信息*/
+// Response /*封装返回信息*/
 type Response struct {
 	Code string      `json:"code"`
 	Data interface{} `json:"data"`
 	Msg  string      `json:"message"`
 }
 
-/*代理原有的Json方法*/
-func (c *CustomContext) JSON(msg API.ApiResponseEnum, obj interface{}) {
+// JSON /*代理原有的Json方法*/
+func (c *Context) JSON(msg API.ApiResponseEnum, obj interface{}) {
 	ok := http.StatusOK
 	response := &Response{
 		Code: API.GetCode(msg),
@@ -49,7 +52,9 @@ func (c *CustomContext) JSON(msg API.ApiResponseEnum, obj interface{}) {
 	}
 	c.Context.JSON(ok, response)
 }
-func (c *CustomContext) JSON2(api API.ApiResponseEnum, msg string) {
+
+// JSON2 /*代理原有的Json方法*/
+func (c *Context) JSON2(api API.ApiResponseEnum, msg string) {
 	ok := http.StatusOK
 	response := &Response{
 		Code: API.GetCode(api),
@@ -58,7 +63,9 @@ func (c *CustomContext) JSON2(api API.ApiResponseEnum, msg string) {
 	}
 	c.Context.JSON(ok, response)
 }
-func (c *CustomContext) CustomJSON(msg API.ApiResponseEnum, desc string) {
+
+// CustomJSON 定制 JSON
+func (c *Context) CustomJSON(msg API.ApiResponseEnum, desc string) {
 	ok := http.StatusOK
 	response := &Response{
 		Code: API.GetCode(msg),
@@ -68,23 +75,8 @@ func (c *CustomContext) CustomJSON(msg API.ApiResponseEnum, desc string) {
 	c.Context.JSON(ok, response)
 }
 
+// CustomJSON2 数据校验
 func dataValidate(obj interface{}) error {
 	validate := validator.New()
 	return validate.Struct(obj)
-}
-
-type Service struct {
-	etherService *EtherService
-	stakeService *StakeService
-	userService  *UserService
-}
-
-func New(logger zap.Logger,
-	dao *dao.Dao) *Service {
-	return &Service{
-		etherService: NewEtherService(),
-		stakeService: NewStakeService(),
-		userService:  NewUserService(),
-	}
-
 }

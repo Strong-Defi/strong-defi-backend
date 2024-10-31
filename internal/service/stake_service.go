@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/strong-defi/strong-defi-backend/internal/dao"
 	"github.com/strong-defi/strong-defi-backend/internal/model"
 	"github.com/strong-defi/strong-defi-backend/internal/req"
 	"github.com/strong-defi/strong-defi-backend/pkg/math"
@@ -19,31 +20,26 @@ import (
 )
 
 type StakeService struct {
+	dao *dao.Dao
 }
 
-func NewStakeService() *StakeService {
-	return &StakeService{}
-}
-
-func T1() {
-	contract.SCHStakeMetaData
+func NewStakeService(d *dao.Dao) *StakeService {
+	return &StakeService{dao: d}
 }
 
 // GetAccountBalance 获取账号余额
-func GetAccountBalance(c *gin.Context) {
-	myCtx := &CustomContext{c}
-
+func (svc *StakeService) GetAccountBalance(c *gin.Context) {
+	myCtx := &Context{c}
 	var accountReq req.AccountBalanceReq
 	err := myCtx.ShouldBindJSON(&accountReq)
-
 	if err != nil {
-		logs.Error("Error binding JSON:", err.Error())
+		log.Error("Error binding JSON:", err.Error())
 		myCtx.JSON(API.DATA_ERROR, err.Error())
 		return
 	}
 
 	if errorMsg := dataValidate(accountReq); errorMsg != nil {
-		logs.Error("入参校验失败:", errorMsg)
+		log.Error("入参校验失败:", errorMsg)
 		myCtx.JSON(API.DATA_VALIDATE_ERROR, "")
 		return
 	}
@@ -51,7 +47,7 @@ func GetAccountBalance(c *gin.Context) {
 	/*获取连接*/
 	client, err1 := ethclient.Dial(accountReq.Url)
 	if err1 != nil {
-		logs.Error("获取以太坊节点失败:", err.Error())
+		log.Error("获取以太坊节点失败:", err.Error())
 		myCtx.JSON(API.DATA_ERROR, err.Error())
 		return
 	}
@@ -67,8 +63,8 @@ func GetAccountBalance(c *gin.Context) {
 }
 
 // AddPool 添加用户池
-func AddPool(c *gin.Context) {
-	myCtx := &CustomContext{c}
+func (svc *StakeService) AddPool(c *gin.Context) {
+	myCtx := &Context{c}
 
 	//判断是否是管理员
 	scUser := new(model.ScUser)
@@ -80,31 +76,31 @@ func AddPool(c *gin.Context) {
 		return
 	}
 
-	//如果不是管理员，不允许添加质押池
-	if scUser.UserWalletAddress != app.AdminAddress {
-		myCtx.JSON2(API.COMMOM_ERROR, "非管理员不允许操作质押池")
-		return
-	}
+	//如果不是管理员，不允许添加质押池 TODO
+	//if scUser.UserWalletAddress != app.AdminAddress {
+	//	myCtx.JSON2(API.COMMOM_ERROR, "非管理员不允许操作质押池")
+	//	return
+	//}
 
 	var addPoolReq req.AddPoolReq
 	err := myCtx.ShouldBindJSON(&addPoolReq)
 
 	if err != nil {
-		logs.Error("Error binding JSON:", err.Error())
+		log.Error("Error binding JSON:", err.Error())
 		myCtx.JSON(API.DATA_ERROR, err.Error())
 		return
 	}
 
 	if errorMsg := dataValidate(addPoolReq); errorMsg != nil {
-		logs.Error("入参校验失败:", errorMsg)
+		log.Error("入参校验失败:", errorMsg)
 		myCtx.JSON(API.DATA_VALIDATE_ERROR, "")
 		return
 	}
-	//建立链接
-	client, err := ethclient.Dial(app.DeployAddress)
+	//建立链接 TODO
+	client, err := ethclient.Dial("")
 
 	if err != nil {
-		logs.Error("以太坊连接失败。", err)
+		log.Error("以太坊连接失败。", err)
 		myCtx.JSON2(API.COMMOM_ERROR, "以太坊连接失败")
 		return
 	}
@@ -113,7 +109,7 @@ func AddPool(c *gin.Context) {
 	nonce, err := client.PendingNonceAt(context.Background(), address)
 
 	if err != nil {
-		logs.Error("获取nonce失败。", err)
+		log.Error("获取nonce失败。", err)
 		myCtx.JSON2(API.COMMOM_ERROR, "获取nonce失败")
 		return
 	}
@@ -138,11 +134,11 @@ func AddPool(c *gin.Context) {
 	tx, _ := newContract.AddPool(opts, new(big.Int).SetInt64(int64(addPoolReq.Wight)),
 		tokenAddress, new(big.Int).SetInt64(int64(addPoolReq.MinStakeAmount)),
 		addPoolReq.IsUpdatePool, new(big.Int).SetInt64(int64(addPoolReq.UnStakeLockBlockNumber)))
-
+	log.Info("tx:", tx.Hash().Hex())
 	myCtx.JSON(API.SUCCESS, "")
 }
 
 // GetPoolBalance 获取用户池余额
-func GetPoolBalance(c *gin.Context) {
+func (svc *StakeService) GetPoolBalance(c *gin.Context) {
 
 }

@@ -2,26 +2,36 @@ package server
 
 import (
 	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
+	"github.com/strong-defi/strong-defi-backend/internal/router"
+	"github.com/strong-defi/strong-defi-backend/internal/service"
+	plog "github.com/strong-defi/strong-defi-backend/pkg/log"
 )
 
 var (
-	log *zap.Logger
+	log plog.Logger
 )
 
 type HttpServer struct {
 	engine *gin.Engine
 }
 
-func NewHttpServer(logger zap.Logger) (server *HttpServer, cancel func(), err error) {
-	log = logger.With(zap.String("server", "http-server"))
-
-	engine := gin.Default()
+// NewHttpServer creates a new http server
+func NewHttpServer(log plog.Logger, engine *gin.Engine, service service.Service) (server *HttpServer, cancel func(), err error) {
 
 	server = &HttpServer{
 		engine: engine,
 	}
-
+	// middleware
+	RegisterRouter(engine, service.UserService, service.StakeService, service.EtherService)
 	return server, func() {
+		log.Info("http server shutdown")
 	}, nil
+}
+
+func RegisterRouter(r *gin.Engine, userService *service.UserService,
+	stakeService *service.StakeService, etherService *service.EtherService) *gin.Engine {
+	router.InjectEtherRouter(r, etherService)
+	router.InjectStakeRouter(r, stakeService)
+	router.InjectUserRouter(r, userService)
+	return r
 }

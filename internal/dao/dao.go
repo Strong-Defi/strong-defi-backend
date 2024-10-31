@@ -1,24 +1,25 @@
 package dao
 
 import (
-	"go.uber.org/zap"
+	pdb "github.com/strong-defi/strong-defi-backend/pkg/db"
+	plog "github.com/strong-defi/strong-defi-backend/pkg/log"
 	"gorm.io/gorm"
 )
 
 var (
-	logs zap.Logger
+	log plog.Logger
 )
 
 type Dao struct {
-	Orm *gorm.DB
+	db *gorm.DB
 }
 
-func New(logger zap.Logger, db *gorm.DB) *Dao {
-	logs = logger
-	return &Dao{Orm: db}
-}
-
-/*get grom db*/
-func (d *Dao) ORM() *gorm.DB {
-	return d.Orm
+// New 实例化Dao
+func New(logger plog.Logger, config *pdb.Config) *Dao {
+	log = logger
+	db, err := pdb.NewMysql(config)
+	if err != nil {
+		panic(err)
+	}
+	return &Dao{db: db}
 }

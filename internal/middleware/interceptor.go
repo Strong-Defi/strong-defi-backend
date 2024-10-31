@@ -10,7 +10,7 @@ import (
 
 func CheckIsAdmin(c *gin.Context) {
 
-	myCtx := &service.CustomContext{c}
+	myCtx := &service.Context{c}
 	myCtx.GetHeader("")
 
 }
@@ -18,7 +18,7 @@ func CheckIsAdmin(c *gin.Context) {
 // CheckToken 检查是否具有登陆权限
 func CheckToken(c *gin.Context) {
 
-	myCtx := &service.CustomContext{c}
+	myCtx := &service.Context{c}
 	url := myCtx.Request.URL.String()
 	if strings.Contains(url, "/login") {
 		return
