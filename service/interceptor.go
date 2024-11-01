@@ -36,3 +36,7 @@ func CheckToken(c *gin.Context) {
 
 	myCtx.Set(API.TOKEN_KEY, info)
 }
+
+func HandleRequestPage(c *gin.Context) {
+
+}

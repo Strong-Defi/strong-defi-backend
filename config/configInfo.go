@@ -34,10 +34,12 @@ func InitConfig() {
 	logging.Compress = viper.GetBool("log.compress")
 	//启动地址
 	app.Port = viper.GetString("app.port")
-	//管理员部署地址
+	//管理员钱包地址
 	app.AdminAddress = viper.GetString("app.adminAddress")
 	//部署地址
 	app.DeployAddress = viper.GetString("app.deployAddress")
+	//合约地址
+	app.ContractAddress = viper.GetString("app.contractAddress")
 
 	//db的配置
 	db.Dsn = viper.GetString("mysql.dsn")

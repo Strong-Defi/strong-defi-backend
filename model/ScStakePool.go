@@ -1,12 +1,15 @@
 package model
 
 import (
+	"errors"
+	"gorm.io/gorm"
 	"time"
 )
 
 type StakePool struct {
 	ID                   uint64    `gorm:"primaryKey;autoIncrement;comment:主键" json:"id"`
 	PoolID               int64     `gorm:"default:-1;not null;comment:质押池id" json:"pool_id"`
+	PoolCode             string    `gorm:"type:varchar(128);default:'';not null;comment:质押池唯一code" json:"pool_code"`
 	TokenAddress         string    `gorm:"type:varchar(128);default:'';not null;comment:token地址" json:"token_address"`
 	LockStakeBlockNumber int64     `gorm:"default:0;not null;comment:解锁质押的区块数" json:"lock_stake_block_number"`
 	MinStakeAmount       uint64    `gorm:"type:bigint(64);default:0;not null;comment:最小质押金额,单位：wei" json:"min_stake_amount"`
@@ -27,19 +30,45 @@ func (d *Dao) CreateStakePool(stakePool *StakePool) error {
 }
 
 // 获取单个质押池
-func (d *Dao) GetStakePoolByID(id uint64) (*StakePool, error) {
-	var stakePool StakePool
-	if err := d.Orm.First(&stakePool, id).Error; err != nil {
+func (d *Dao) GetStakePoolByID(id uint64) (stakePool *StakePool, err error) {
+	if err = d.Orm.First(&stakePool, id).Error; err != nil {
 		return nil, err
 	}
-	return &stakePool, nil
+	return stakePool, nil
+}
+
+func (d *Dao) GetStakePoolByCode(poolCode string) (stakePool *StakePool, err error) {
+	where := "pool_code=? and is_deleted=0"
+	if err = d.Orm.Where(where, poolCode).First(&stakePool).Error; err != nil {
+		return nil, err
+	}
+	return stakePool, nil
 }
 
 // 获取所有质押池
-func (d *Dao) GetAllStakePools() ([]StakePool, error) {
-	var stakePools []StakePool
-	if err := d.Orm.Find(&stakePools).Error; err != nil {
-		return nil, err
+func (d *Dao) SelectStakePoolPage(pageSize, pageNum int, orderBy, where string, params ...interface{}) (stakePools *[]StakePool, err error) {
+
+	tx := d.ORM().Where(where, params)
+	if orderBy != "" {
+		tx.Order(orderBy)
+	} else {
+		tx.Order("mtime desc")
+	}
+
+	if pageNum > 0 {
+		tx.Limit(pageNum)
+	}
+	if pageSize > 0 {
+		tx.Offset(pageSize)
+	}
+
+	if err = tx.Find(&stakePools).Error; err != nil {
+
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			logs.Error("stakePool.SelectPoolPage where(%s) params(%+v) offset(%d) limit(%d) error(%+v)",
+				where, params, pageSize, pageNum, err)
+			return
+		}
 	}
 	return stakePools, nil
 }

@@ -15,6 +15,7 @@ const (
 	DATA_PARSE_ERROR    ApiResponseEnum = "DATA_PARSE_ERROR"
 	COMMOM_ERROR        ApiResponseEnum = "COMMOM_ERROR"
 	NO_AUTH_ERROR       ApiResponseEnum = "NO_AUTH_ERROR"
+	POOL_NOT_EXIST      ApiResponseEnum = "POOL_NOT_EXIST"
 )
 
 func GetMessage(enum ApiResponseEnum) string {
@@ -26,6 +27,7 @@ func GetMessage(enum ApiResponseEnum) string {
 		COMMOM_ERROR:        "通用错误",
 		NO_AUTH_ERROR:       "请登录后操作",
 		USER_EXIST:          "用户已存在",
+		POOL_NOT_EXIST:      "质押池不存在",
 	}
 	if codeMap[enum] == "" {
 		return ""
@@ -42,6 +44,7 @@ func GetCode(enum ApiResponseEnum) string {
 		COMMOM_ERROR:        "100004",
 		NO_AUTH_ERROR:       "100005",
 		USER_EXIST:          "100006",
+		POOL_NOT_EXIST:      "100007",
 	}
 	if codeMap[enum] == "" {
 		return ""

@@ -29,3 +29,15 @@ type AddPoolReq struct {
 // 用户质押请求
 type UserStakeReq struct {
 }
+
+// 查询用户信息
+type QueryUserInfoReq struct {
+
+	//池id
+	PoolCode string `json:"poolCode" validate:"required"`
+}
+
+type AllPoolReq struct {
+	PageNum  int `json:"pageNum" validate:"required"`
+	PageSize int `json:"pageSize" validate:"required"`
+}
