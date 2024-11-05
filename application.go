@@ -18,7 +18,7 @@ func main() {
 	gin.SetMode(gin.DebugMode)
 	engine := gin.Default()
 	/*初始化日志一定放到最上面，下面的init需要用到日志*/
-	initLogAndConf()
+	fmt.Println("xxxxxxxxxxxxxxx", config.Conf)
 
 	db := dbInit()
 	/*服务初始化*/

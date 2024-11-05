@@ -9,19 +9,18 @@ import (
 	API "strong-defi-backend/common"
 	"strong-defi-backend/config"
 	"strong-defi-backend/model"
-	"strong-defi-backend/resources"
 )
 
 var (
 	dao  *model.Dao
 	logs log.Logger
-	app  resources.App
+	//app  resources.App
 )
 
 func New(d *model.Dao) {
 	dao = d
 	logs = config.Log
-	app = config.Config.App
+	//app = config.Config.App
 
 }
 
