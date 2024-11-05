@@ -135,7 +135,7 @@ func AddPool(c *gin.Context) {
 	if len(receipt.Logs) > 0 {
 		//异步存入质押池信息
 		go func() {
-			if saveTransLogs(receipt, tx, address, scUser) {
+			if saveTransLogs(receipt, tx, address, scUser, API.AddPool.String()) {
 				return
 			}
 
@@ -177,6 +177,39 @@ func AddPool(c *gin.Context) {
 	myCtx.JSON(API.SUCCESS, "")
 }
 
+// UserApprove 用户转账授权
+func UserApprove(c *gin.Context) {
+
+	myCtx := &CustomContext{c}
+
+	var req request.UserApproveReq
+
+	err := myCtx.ShouldBindJSON(&req)
+
+	if err != nil {
+		logs.Error("Error binding JSON:", err.Error())
+		myCtx.JSON(API.DATA_ERROR, err.Error())
+		return
+	}
+
+	if errorMsg := dataValidate(req); errorMsg != nil {
+		logs.Error("入参校验失败:", errorMsg)
+		myCtx.JSON(API.DATA_VALIDATE_ERROR, "")
+		return
+	}
+
+	value, _ := myCtx.Get(API.TOKEN_KEY)
+
+	var scUser model.ScUser
+	err = json.Unmarshal([]byte(value.(string)), &scUser)
+	if err != nil {
+		logs.Error("解析用户信息失败。", err)
+		myCtx.JSON2(API.COMMOM_ERROR, "解析用户信息失败")
+		return
+	}
+	//用户授权，优先查询用户本地代币数量
+}
+
 // UserStake 用户质押
 func UserStake(c *gin.Context) {
 	myCtx := &CustomContext{c}
@@ -195,6 +228,78 @@ func UserStake(c *gin.Context) {
 		logs.Error("入参校验失败:", errorMsg)
 		myCtx.JSON(API.DATA_VALIDATE_ERROR, "")
 		return
+	}
+
+	value, _ := myCtx.Get(API.TOKEN_KEY)
+
+	var scUser model.ScUser
+	err = json.Unmarshal([]byte(value.(string)), &scUser)
+	if err != nil {
+		logs.Error("解析用户信息失败。", err)
+		myCtx.JSON2(API.COMMOM_ERROR, "解析用户信息失败")
+		return
+	}
+
+	dial, err := ethclient.Dial(app.DeployAddress)
+	if err != nil {
+		logs.Error("连接合约失败。", err)
+		myCtx.JSON2(API.COMMOM_ERROR, "连接合约失败")
+		return
+	}
+
+	//查询质押池
+	stakePool, err := dao.GetStakePoolByCode(req.PoolCode)
+	if err != nil {
+		logs.Error("查询质押池失败。", err)
+		myCtx.JSON2(API.COMMOM_ERROR, "查询质押池失败")
+		return
+	} else if stakePool == nil {
+		logs.Warn("该质押池不存在", req)
+		myCtx.JSON(API.POOL_NOT_EXIST, "")
+		return
+	}
+
+	contractAddress := common.HexToAddress(app.DeployAddress)
+
+	scStake, err := contract.NewSCHStake(contractAddress, dial)
+	if err != nil {
+		logs.Error("创建合约实例失败。", err)
+		myCtx.JSON2(API.COMMOM_ERROR, "创建合约实例失败")
+		return
+	}
+
+	userAddress := common.HexToAddress(scUser.UserWalletAddress)
+	opts := &bind.TransactOpts{
+		From: userAddress,
+	}
+	//用户质押
+	tx, err := scStake.Stake(opts, new(big.Int).SetInt64(stakePool.PoolID), userAddress, new(big.Int).SetInt64(req.Amount))
+	if err != nil {
+		logs.Error("用户质押失败。", err)
+		myCtx.JSON2(API.COMMOM_ERROR, "用户质押失败")
+		return
+	}
+
+	receipt, _ := dial.TransactionReceipt(context.Background(), tx.Hash())
+
+	//如果交易成功，则保存交易日志
+	if receipt.Status == types.ReceiptStatusSuccessful {
+
+		scStakeRecord := model.ScStakeRecord{
+			StakeType:         API.UserStake.String(),
+			PoolID:            stakePool.PoolID,
+			UserWalletAddress: scUser.UserWalletAddress,
+			TransHash:         tx.Hash().String(),
+			TransAmount:       req.Amount,
+			Creator:           scUser.UserAddress,
+		}
+		//保存交易记录
+		_ = dao.CreateScStakeRecord(scStakeRecord)
+		//存入交易日志表
+		if saveTransLogs(receipt, tx, userAddress, &scUser, API.UserStake.String()) {
+			logs.Error("用户质押失败。", err)
+			return
+		}
 	}
 }
 
@@ -230,7 +335,7 @@ func GetUserInfo(c *gin.Context) {
 	scUser := new(model.ScUser)
 	value, exists := myCtx.Get(API.TOKEN_KEY)
 	if exists {
-		json.Unmarshal([]byte(value.(string)), scUser)
+		_ = json.Unmarshal([]byte(value.(string)), scUser)
 	} else {
 		myCtx.JSON2(API.COMMOM_ERROR, "请登陆后在操作")
 		return
@@ -334,15 +439,28 @@ func GetPoolDetail(c *gin.Context) {
 
 	//todo 这里要进行质押池数据的组装,暂时先不组装
 	myCtx.JSON(API.SUCCESS, poolDetail)
+}
+
+// UserTransfer 用户本地代币转账
+func UserTransfer(c *gin.Context) {
+
+}
+
+// TokenBalance 查询代币余额
+func TokenBalance(c *gin.Context) {
 
 }
 
 // 保存交易信息
-func saveTransLogs(receipt *types.Receipt, tx *types.Transaction, address common.Address, scUser *model.ScUser) bool {
+func saveTransLogs(receipt *types.Receipt,
+	tx *types.Transaction,
+	address common.Address,
+	scUser *model.ScUser,
+	transType string) bool {
 	//保存交易信息
 	transLogs, _ := utils.ToJson(receipt.Logs)
 	scTransLogs := model.ScTransactionLog{
-		TransType:   API.AddPool.String(),
+		TransType:   transType,
 		TransHash:   tx.Hash().Hex(),
 		Gas:         int64(tx.Gas()),
 		GasPrice:    tx.GasPrice().Int64(),

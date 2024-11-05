@@ -26,8 +26,14 @@ type AddPoolReq struct {
 	UserPrivateKey string `json:"userPrivateKey"`
 }
 
-// 用户质押请求
+// UserApproveReq 用户授权请求
+type UserApproveReq struct {
+}
+
+// UserStakeReq 用户质押请求
 type UserStakeReq struct {
+	PoolCode string `json:"poolCode" validate:"required"`
+	Amount   int64  `json:"amount" validate:"required"`
 }
 
 // 查询用户信息
