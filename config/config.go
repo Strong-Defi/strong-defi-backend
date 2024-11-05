@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"github.com/ethereum/go-ethereum/log"
 	"github.com/spf13/viper"
 	"gopkg.in/natefinch/lumberjack.v2"
@@ -23,7 +24,7 @@ type Db struct {
 	IdleTimeout int    //超时时间
 }
 
-type Config struct {
+type AppConfig struct {
 	Logging Logging
 	App     App
 	Db      Db
@@ -39,14 +40,26 @@ type Logging struct {
 	Compress   bool
 }
 
-var Conf Config
+var Config AppConfig
 var Log log.Logger
 
 func initConfig() {
+	// 读取配置
+	workDir, _ := os.Getwd()
+	viper.SetConfigName("config")
+	viper.SetConfigType("yaml")
+	viper.AddConfigPath(workDir)
+	fmt.Println(workDir)
+	err := viper.ReadInConfig()
+	if err != nil {
+		panic(err)
+	}
+
 	logging := Logging{}
 	app := App{}
 	db := Db{}
 
+	// 配置赋值
 	logging.IsStdout = viper.GetBool("log.isStdout")
 	logging.Filename = viper.GetString("log.filename")
 	logging.Prefix = viper.GetString("log.prefix")
@@ -69,12 +82,11 @@ func initConfig() {
 	db.IdleTimeout = viper.GetInt("mysql.idleTimeout")
 	db.Active = viper.GetInt("mysql.active")
 
-	Conf.App = app
-	Conf.Logging = logging
-	Conf.Db = db
+	Config.App = app
+	Config.Logging = logging
+	Config.Db = db
 }
 func init() {
-
 	initConfig()
 	initLog()
 }
@@ -82,36 +94,36 @@ func init() {
 // TODO::此处待优化
 func initLog() {
 	/*通过lumberjack，引入日志文件*/
-	filename := ""                    // 日志文件名
-	maxSize := 1                      // 每个日志文件的最大大小（MB）
-	maxBackups := 5                   // 保留旧日志文件的最大数量
-	maxAge := 30                      // 保留旧日志文件的最大天数
-	compress := Conf.Logging.Compress //设置 compress 为 true 以启用压缩
+	filename := ""                      // 日志文件名
+	maxSize := 1                        // 每个日志文件的最大大小（MB）
+	maxBackups := 5                     // 保留旧日志文件的最大数量
+	maxAge := 30                        // 保留旧日志文件的最大天数
+	compress := Config.Logging.Compress //设置 compress 为 true 以启用压缩
 
-	if Conf.Logging.Filename != "" {
-		if Conf.Logging.Prefix != "" {
-			filename = Conf.Logging.Prefix + Conf.Logging.Filename
+	if Config.Logging.Filename != "" {
+		if Config.Logging.Prefix != "" {
+			filename = Config.Logging.Prefix + Config.Logging.Filename
 		} else {
-			filename = Conf.Logging.Filename
+			filename = Config.Logging.Filename
 		}
 	}
 
-	if Conf.Logging.MaxSize > 0 {
-		maxSize = Conf.Logging.MaxSize
+	if Config.Logging.MaxSize > 0 {
+		maxSize = Config.Logging.MaxSize
 	}
 
-	if Conf.Logging.MaxBackups > 0 {
-		maxBackups = Conf.Logging.MaxBackups
+	if Config.Logging.MaxBackups > 0 {
+		maxBackups = Config.Logging.MaxBackups
 	}
-	if Conf.Logging.MaxAge > 0 {
-		maxAge = Conf.Logging.MaxAge
+	if Config.Logging.MaxAge > 0 {
+		maxAge = Config.Logging.MaxAge
 	}
 
-	//if Conf.Logging.Compress > 0 {
-	//	maxAge = Conf.Logging.MaxAge
+	//if Config.Logging.Compress > 0 {
+	//	maxAge = Config.Logging.MaxAge
 	//}
 	var logHandle *log.TerminalHandler
-	if Conf.Logging.IsStdout {
+	if Config.Logging.IsStdout {
 		logHandle = log.NewTerminalHandlerWithLevel(os.Stdout, log.LvlInfo, true)
 
 	} else {

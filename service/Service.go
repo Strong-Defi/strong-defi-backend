@@ -14,13 +14,13 @@ import (
 var (
 	dao  *model.Dao
 	logs log.Logger
-	//app  resources.App
+	app  config.App
 )
 
 func New(d *model.Dao) {
 	dao = d
 	logs = config.Log
-	//app = config.Config.App
+	app = config.Config.App
 
 }
 
