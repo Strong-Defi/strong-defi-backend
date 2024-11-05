@@ -24,7 +24,7 @@ func AllInterface(r *gin.Engine) *gin.Engine {
 		i.POST("/addPool", service.AddPool)
 		i.POST("/userStake", service.UserStake)
 		i.POST("/getUserInfo", service.GetUserInfo)
-		i.POST("/getAllPool", service.HandleRequestPage, service.GetAllPool)
+		i.POST("/getAllPool", service.GetAllPool)
 		i.GET("/getPoolDetail", service.GetPoolDetail)
 	}
 

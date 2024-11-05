@@ -73,3 +73,25 @@ create table sc_transaction_logs
 
 create index ix_pool_id
     on sc_transaction_logs (trans_hash);
+
+
+
+-- 质押操作记录表
+create table sc_stake_record
+(
+    id                  bigint unsigned auto_increment comment '主键'
+        primary key,
+    stake_type          varchar(64)  default ''                not null comment '质押类型',
+    pool_id             bigint       default -1                not null comment '质押池id',
+    user_wallet_address varchar(128) default ''                not null comment '用户钱包地址',
+    trans_hash          varchar(128) default ''                not null comment '交易hash',
+    trans_amount        bigint       default 0                 not null comment '交易金额',
+    creator             varchar(64)  default ''                not null comment '创建人',
+    is_deleted          tinyint      default 0                 not null comment '是否已删除；1=是，0=否',
+    mtime               datetime     default CURRENT_TIMESTAMP not null on update CURRENT_TIMESTAMP comment '更新时间',
+    ctime               datetime     default CURRENT_TIMESTAMP not null comment '创建时间'
+)
+    comment '质押操作记录表';
+
+create index ix_pool_id
+    on sc_stake_record (trans_hash);
