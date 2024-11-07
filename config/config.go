@@ -16,6 +16,8 @@ type App struct {
 	DeployAddress string
 	//合约地址
 	ContractAddress string
+	// 本币合约地址
+	TokenAddress string
 }
 type Db struct {
 	Dsn         string // 是否输出到控制台
@@ -75,6 +77,8 @@ func initConfig() {
 	app.DeployAddress = viper.GetString("app.deployAddress")
 	//合约地址
 	app.ContractAddress = viper.GetString("app.contractAddress")
+	//本币合约地址
+	app.TokenAddress = viper.GetString("app.tokenAddress")
 
 	//db的配置
 	db.Dsn = viper.GetString("mysql.dsn")

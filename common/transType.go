@@ -7,6 +7,7 @@ const (
 	AddPool TransType = iota
 	//用户质押
 	UserStake
+	UserApprove
 )
 
 // String 方法用于转换为字符串
@@ -16,6 +17,8 @@ func (s TransType) String() string {
 		return "ADD_POOL"
 	case UserStake:
 		return "USER_STAKE"
+	case UserApprove:
+		return "USER_APPROVE"
 	default:
 		return "UNKNOWN"
 	}
@@ -27,6 +30,8 @@ func (s TransType) TransTypeParse(value string) TransType {
 		return AddPool
 	case "USER_STAKE":
 		return 1
+	case "USER_APPROVE":
+		return 2
 	default:
 		return -1
 	}
@@ -38,6 +43,8 @@ func (s TransType) IsValid() bool {
 	case AddPool:
 		return true
 	case UserStake:
+		return true
+	case UserApprove:
 		return true
 	default:
 		return false

@@ -14,7 +14,8 @@ import (
 	"math/big"
 	"strings"
 	API "strong-defi-backend/common"
-	contract "strong-defi-backend/contract/schStake"
+	"strong-defi-backend/contract/scToken"
+	"strong-defi-backend/contract/schStake"
 	"strong-defi-backend/model"
 	"strong-defi-backend/request"
 	"strong-defi-backend/utils"
@@ -65,7 +66,7 @@ func AddPool(c *gin.Context) {
 	scUser := new(model.ScUser)
 	value, exists := myCtx.Get(API.TOKEN_KEY)
 	if exists {
-		json.Unmarshal([]byte(value.(string)), scUser)
+		_ = json.Unmarshal([]byte(value.(string)), scUser)
 	} else {
 		myCtx.JSON2(API.COMMOM_ERROR, "请登陆后在操作")
 		return
@@ -108,7 +109,7 @@ func AddPool(c *gin.Context) {
 		myCtx.JSON2(API.COMMOM_ERROR, "获取nonce失败")
 		return
 	}
-	newContract, _ := contract.NewSCHStake(address, client)
+	newContract, _ := sch_stake.NewSCHStake(address, client)
 
 	//获取chaiID
 	chaiID, err := client.ChainID(context.Background())
@@ -140,7 +141,7 @@ func AddPool(c *gin.Context) {
 			}
 
 			for _, vlog := range receipt.Logs {
-				parseABI, _ := abi.JSON(strings.NewReader(contract.SCHStakeMetaData.ABI))
+				parseABI, _ := abi.JSON(strings.NewReader(sch_stake.SCHStakeMetaData.ABI))
 				//这是固定的，获取事件信息的，第一个是合约事件返回的结构，第二个是事件名称
 				var events []request.Event
 				err2 := parseABI.UnpackIntoInterface(&events, "AddPool", vlog.Data)
@@ -198,6 +199,12 @@ func UserApprove(c *gin.Context) {
 		return
 	}
 
+	if req.Amount <= 0 {
+		logs.Info("转账数量必须大于0")
+		myCtx.JSON2(API.DATA_ERROR, "转账数量必须大于0")
+		return
+	}
+
 	value, _ := myCtx.Get(API.TOKEN_KEY)
 
 	var scUser model.ScUser
@@ -208,6 +215,51 @@ func UserApprove(c *gin.Context) {
 		return
 	}
 	//用户授权，优先查询用户本地代币数量
+	scTokenAddress := common.HexToAddress(app.TokenAddress)
+	client, err := ethclient.Dial(app.DeployAddress)
+	if err != nil {
+		logs.Error("连接合约失败。", err)
+		myCtx.JSON2(API.COMMOM_ERROR, "连接合约失败")
+		return
+	}
+
+	at, _ := client.PendingNonceAt(context.Background(), scTokenAddress)
+
+	scToken, err := sc_token.NewSCTToken(scTokenAddress, client)
+	//获取chaiID
+	chaiID, err := client.ChainID(context.Background())
+	//获取交易签名函数
+	ecdsa, _ := crypto.HexToECDSA(req.UserPrivateKey)
+
+	//创建签名函数
+	signer := utils.CreateSigner(ecdsa, chaiID)
+
+	opts := &bind.TransactOpts{
+		From: common.HexToAddress(scUser.UserWalletAddress),
+		//设置nonce值进行防重处理
+		Nonce: new(big.Int).SetUint64(at),
+		//这个是给合约发送的值，不是转的值
+		Value:  big.NewInt(0),
+		Signer: signer,
+	}
+	approve, err := scToken.Approve(opts, common.HexToAddress(scUser.UserWalletAddress), big.NewInt(req.Amount))
+	if err != nil {
+		logs.Error("授权失败。", err)
+		myCtx.JSON2(API.COMMOM_ERROR, "授权失败")
+		return
+	}
+	receipt, _ := client.TransactionReceipt(context.Background(), approve.Hash())
+
+	//保存交易数据
+	go func() {
+		saveTransLogs(receipt, approve, scTokenAddress, &scUser, API.UserStake.String())
+	}()
+	if receipt.Status == types.ReceiptStatusSuccessful {
+		myCtx.JSON(API.SUCCESS, "")
+		return
+	}
+	logs.Error("授权状态失败。", receipt.Logs)
+	myCtx.JSON2(API.COMMOM_ERROR, "授权状态失败")
 }
 
 // UserStake 用户质押
@@ -261,7 +313,7 @@ func UserStake(c *gin.Context) {
 
 	contractAddress := common.HexToAddress(app.DeployAddress)
 
-	scStake, err := contract.NewSCHStake(contractAddress, dial)
+	scStake, err := sch_stake.NewSCHStake(contractAddress, dial)
 	if err != nil {
 		logs.Error("创建合约实例失败。", err)
 		myCtx.JSON2(API.COMMOM_ERROR, "创建合约实例失败")
@@ -329,7 +381,7 @@ func GetUserInfo(c *gin.Context) {
 	address := common.HexToAddress(app.ContractAddress)
 
 	/*获取合约实例*/
-	instance, err := contract.NewSCHStake(address, dial)
+	instance, err := sch_stake.NewSCHStake(address, dial)
 
 	//获取登陆人信息
 	scUser := new(model.ScUser)
@@ -429,7 +481,7 @@ func GetPoolDetail(c *gin.Context) {
 		return
 	}
 
-	schStake, err := contract.NewSCHStake(contractAddress, dial)
+	schStake, err := sch_stake.NewSCHStake(contractAddress, dial)
 	if err != nil {
 		logs.Error("获取合约实例失败:", err)
 		myCtx.JSON2(API.COMMOM_ERROR, "获取合约实例失败")

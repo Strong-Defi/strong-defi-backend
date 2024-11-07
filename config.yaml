@@ -4,6 +4,7 @@ server:
   adminAddress: "2344dsf"
   deployAddress: "http://127.0.0.1:7545"
   contractAddress: "0x79D38e962F24eBAe98Dc4e2171fdC958025f1692"
+  tokenAddress: "0x79D38e962F24eBAe98Dc4e2171fdC958025f1692"
 log:
   isStdout: true
   filename: app.log    # 日志文件名
