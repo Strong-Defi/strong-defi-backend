@@ -57,6 +57,10 @@ func InitLogger(config Config) {
 
 }
 
+func SetKeyValue(key string, val string) {
+	l.Logger = l.With().Str(key, val).Logger()
+}
+
 func SetTraceId(traceId string) {
 	l.Logger = l.With().Str("trace_id", traceId).Logger()
 }
