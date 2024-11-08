@@ -14,8 +14,6 @@ func Logging() gin.HandlerFunc {
 		}
 		log.SetTraceId(traceID)
 		c.Set("trace_id", traceID)
-		log.Info().Msgf("xxxxxxxxxxxxxxx set::")
 		c.Next()
-		log.Info().Msgf("xxxxxxxxxxxxxxx get::")
 	}
 }
