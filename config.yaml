@@ -4,6 +4,7 @@ server:
   adminAddress: "2344dsf"
   deployAddress: "http://127.0.0.1:7545"
   contractAddress: "0x79D38e962F24eBAe98Dc4e2171fdC958025f1692"
+  tokenAddress: "0x79D38e962F24eBAe98Dc4e2171fdC958025f1692"
 log:
   level: debug # debug,info,warn,error,fatal,panic,disable
   output: console # 日志打印方式。none不打印日志，console打印到控制台，file输出到文件。默认为console

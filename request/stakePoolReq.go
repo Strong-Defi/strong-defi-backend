@@ -28,6 +28,14 @@ type AddPoolReq struct {
 
 // UserApproveReq 用户授权请求
 type UserApproveReq struct {
+	//用户私钥，todo 这里还需要重新设计私钥的管理，不能让用户直接将私钥暴露在钱后端交互中
+	UserPrivateKey string `json:"userPrivateKey" validate:"required"`
+
+	//授权地址
+	ApproveAddress string `json:"approveAddress" validate:"required"`
+
+	//授权金额
+	Amount int64 `json:"amount" validate:"required"`
 }
 
 // UserStakeReq 用户质押请求
