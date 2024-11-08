@@ -1,7 +1,6 @@
 package service
 
 import (
-	"github.com/ethereum/go-ethereum/log"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"gorm.io/gorm"
@@ -12,14 +11,12 @@ import (
 )
 
 var (
-	dao  *model.Dao
-	logs log.Logger
-	app  config.App
+	dao *model.Dao
+	app config.App
 )
 
 func New(d *model.Dao) {
 	dao = d
-	logs = config.Log
 	app = config.Config.App
 
 }

@@ -6,6 +6,7 @@ import (
 )
 
 func AllInterface(r *gin.Engine) *gin.Engine {
+
 	e := r.Group("/gin/user", service.CheckToken)
 	{
 		e.GET("/login", service.UserLogin)

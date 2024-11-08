@@ -2,18 +2,22 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/spf13/viper"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"os"
 	"strong-defi-backend/config"
 	"strong-defi-backend/model"
+	"strong-defi-backend/pkg/log"
 	server "strong-defi-backend/router"
 	"strong-defi-backend/service"
 	"time"
 )
 
 func main() {
+
+	// 初始化日志
+	log.InitLogger(config.Config.Log)
+
 	/*启动*/
 	gin.SetMode(gin.DebugMode)
 	engine := gin.Default()
@@ -31,20 +35,6 @@ func main() {
 	if err != nil {
 		return
 	}
-}
-
-// 初始化日志，并且引入conf.json文件
-func initLogAndConf() {
-	workDir, _ := os.Getwd()
-	viper.SetConfigName("conf")
-	viper.SetConfigType("yaml")
-	viper.AddConfigPath(workDir + "/resources")
-
-	err := viper.ReadInConfig()
-	if err != nil {
-		panic(err)
-	}
-
 }
 
 // 数据库初始化
@@ -75,4 +65,8 @@ func serverInit(engine *gin.Engine, db *gorm.DB) {
 	server.AllInterface(engine)
 	dao := &model.Dao{Orm: db}
 	service.New(dao)
+}
+
+func initLog() {
+
 }

@@ -3,15 +3,13 @@ package service
 import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/gin-gonic/gin"
+	"strong-defi-backend/pkg/log"
 )
 
 func GetContractInfo(c *gin.Context) {
-	logs.Info("Info to Ethereum")
-	logs.Error("Error to Ethereum")
-	logs.Debug("Debug to Ethereum")
-	logs.Warn("Warn to Ethereum")
+	log.Info().Msgf("Info to Ethereum")
 	client, _ := ethclient.Dial("https://cloudflare-eth.com")
 	if client == nil {
-		logs.Error("Connected to Ethereum")
+		log.Error().Msgf("Connected to Ethereum")
 	}
 }
