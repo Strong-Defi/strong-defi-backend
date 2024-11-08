@@ -201,7 +201,7 @@ func UserApprove(c *gin.Context) {
 	}
 
 	if req.Amount <= 0 {
-		logs.Info("转账数量必须大于0")
+		log.Info().Msgf("转账数量必须大于0")
 		myCtx.JSON2(API.DATA_ERROR, "转账数量必须大于0")
 		return
 	}
@@ -219,7 +219,7 @@ func UserApprove(c *gin.Context) {
 	scTokenAddress := common.HexToAddress(app.TokenAddress)
 	client, err := ethclient.Dial(app.DeployAddress)
 	if err != nil {
-		logs.Error("连接合约失败。", err)
+		log.Error().Msgf("连接合约失败。", err)
 		myCtx.JSON2(API.COMMOM_ERROR, "连接合约失败")
 		return
 	}
@@ -245,7 +245,7 @@ func UserApprove(c *gin.Context) {
 	}
 	approve, err := scToken.Approve(opts, common.HexToAddress(scUser.UserWalletAddress), big.NewInt(req.Amount))
 	if err != nil {
-		logs.Error("授权失败。", err)
+		log.Error().Msgf("授权失败。", err)
 		myCtx.JSON2(API.COMMOM_ERROR, "授权失败")
 		return
 	}
@@ -259,7 +259,7 @@ func UserApprove(c *gin.Context) {
 		myCtx.JSON(API.SUCCESS, "")
 		return
 	}
-	logs.Error("授权状态失败。", receipt.Logs)
+	log.Error().Msgf("授权状态失败。", receipt.Logs)
 	myCtx.JSON2(API.COMMOM_ERROR, "授权状态失败")
 }
 
