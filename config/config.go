@@ -9,6 +9,7 @@ import (
 
 type App struct {
 	Port string
+	Host string
 	//管理员钱包地址
 	AdminAddress string
 	//链地址
@@ -47,11 +48,12 @@ func init() {
 
 	// 应用配置
 	app := App{
-		Port:            viper.GetString("app.port"),
-		AdminAddress:    viper.GetString("app.adminAddress"),    //管理员钱包地址
-		DeployAddress:   viper.GetString("app.deployAddress"),   //部署地址
-		ContractAddress: viper.GetString("app.contractAddress"), //合约地址
-		TokenAddress: viper.GetString("app.tokenAddress"), //本币合约地址
+		Host:            viper.GetString("server.host"),
+		Port:            viper.GetString("server.port"),
+		AdminAddress:    viper.GetString("server.adminAddress"),    //管理员钱包地址
+		DeployAddress:   viper.GetString("server.deployAddress"),   //部署地址
+		ContractAddress: viper.GetString("server.contractAddress"), //合约地址
+		TokenAddress:    viper.GetString("server.tokenAddress"),    //本币合约地址
 	}
 	// 数据库配置
 	db := Db{

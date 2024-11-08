@@ -13,7 +13,9 @@ func Logging() gin.HandlerFunc {
 			traceID = uuid.New().String() // Generate a new trace_id
 		}
 		log.SetTraceId(traceID)
+		log.SetKeyValue("URI", c.Request.RequestURI)
 		c.Set("trace_id", traceID)
+
 		c.Next()
 	}
 }

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -31,7 +32,8 @@ func main() {
 	if readPortErr != nil {
 		panic(readPortErr)
 	}
-	err := engine.Run()
+
+	err := engine.Run(fmt.Sprintf("%s:%s", config.Config.App.Host, config.Config.App.Port))
 	if err != nil {
 		return
 	}
@@ -62,11 +64,7 @@ func dbInit() *gorm.DB {
 
 // 初始化业务server
 func serverInit(engine *gin.Engine, db *gorm.DB) {
-	server.AllInterface(engine)
+	server.Route(engine)
 	dao := &model.Dao{Orm: db}
 	service.New(dao)
-}
-
-func initLog() {
-
 }
