@@ -2,11 +2,13 @@ package server
 
 import (
 	"github.com/gin-gonic/gin"
+	"strong-defi-backend/middleware"
 	"strong-defi-backend/service"
 )
 
 func AllInterface(r *gin.Engine) *gin.Engine {
-	e := r.Group("/gin/user", service.CheckToken)
+
+	e := r.Group("/gin/user", service.CheckToken, middleware.Logging())
 	{
 		e.GET("/login", service.UserLogin)
 		e.POST("/UserRegister", service.UserRegister)

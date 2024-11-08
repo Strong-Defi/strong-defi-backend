@@ -5,16 +5,16 @@ server:
   deployAddress: "http://127.0.0.1:7545"
   contractAddress: "0x79D38e962F24eBAe98Dc4e2171fdC958025f1692"
 log:
-  isStdout: true
-  filename: app.log    # 日志文件名
-  prefix: gin_test_   # 日志的前缀
+  level: debug # debug,info,warn,error,fatal,panic,disable
+  output: console # 日志打印方式。none不打印日志，console打印到控制台，file输出到文件。默认为console
+  file: ./zzz.log    # 日志文件路径
   maxSize: 1                # 每个日志文件的最大大小（MB）
   maxBackups: 5             # 保留旧日志文件的最大数量
   maxAge: 30                # 保留旧日志文件的最大天数
   compress: true            # 设置 compress 为 true 以启用压缩
 
 mysql:
-  dsn : "root:root12345@tcp(127.0.0.1:3306)/sc_stake?timeout=5s&readTimeout=5s&writeTimeout=5s&parseTime=true&loc=Local&charset=utf8,utf8mb4"
+  dsn : "root:Yin123456!@tcp(127.0.0.1:3306)/sc_stake?timeout=5s&readTimeout=5s&writeTimeout=5s&parseTime=true&loc=Local&charset=utf8,utf8mb4"
   active : 20   #最大空闲连接数
   idle : 5      #最大打开连接数
   idleTimeout : 4  #单位是小时

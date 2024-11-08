@@ -7,6 +7,7 @@ import (
 	"gorm.io/gorm"
 	API "strong-defi-backend/common"
 	"strong-defi-backend/model"
+	"strong-defi-backend/pkg/log"
 	"strong-defi-backend/request"
 	"strong-defi-backend/utils"
 )
@@ -16,12 +17,12 @@ func UserLogin(c *gin.Context) {
 	myCtx := &CustomContext{c}
 	var userLoginReq request.UserLoginReq
 	if err := myCtx.ShouldBindJSON(&userLoginReq); err != nil {
-		logs.Error("Error binding JSON:", err.Error())
+		log.Error().Msgf("Error binding JSON:", err.Error())
 		myCtx.JSON(API.DATA_VALIDATE_ERROR, "")
 		return
 	}
 	if errorMsg := dataValidate(userLoginReq); errorMsg != nil {
-		logs.Error("入参校验失败:", errorMsg)
+		log.Error().Msgf("入参校验失败:", errorMsg)
 		myCtx.JSON(API.DATA_ERROR, "")
 		return
 	}
@@ -79,7 +80,7 @@ func QueryByWalletAddress(c *gin.Context) {
 
 	walletAddress := myCtx.Query("walletAddress")
 
-	logs.Warn("通过地址查询用户，入参为：", walletAddress)
+	log.Warn().Msgf("通过地址查询用户，入参为：", walletAddress)
 
 	user, _ := dao.SelectUser("user_wallet_address=? and is_deleted=0", walletAddress)
 
@@ -94,7 +95,7 @@ func QueryByTelephone(c *gin.Context) {
 	myCtx := &CustomContext{c}
 
 	telephone := myCtx.Query("telephone")
-	logs.Warn("通过电话号码用户，入参为：", telephone)
+	log.Warn().Msgf("通过电话号码用户，入参为：", telephone)
 	user, _ := dao.SelectUser("user_telephone=? and is_deleted=0", telephone)
 
 	if user == nil {
@@ -108,12 +109,12 @@ func UserRegister(c *gin.Context) {
 	myCtx := &CustomContext{c}
 	var userRegister request.UserRegister
 	if err := myCtx.ShouldBindJSON(&userRegister); err != nil {
-		logs.Error("Error binding JSON:", err.Error())
+		log.Error().Msgf("Error binding JSON:", err.Error())
 		myCtx.JSON(API.DATA_VALIDATE_ERROR, "")
 		return
 	}
 	if errorMsg := dataValidate(userRegister); errorMsg != nil {
-		logs.Error("入参校验失败:", errorMsg)
+		log.Error().Msgf("入参校验失败:", errorMsg)
 		myCtx.JSON(API.DATA_ERROR, "")
 		return
 	}
@@ -122,7 +123,7 @@ func UserRegister(c *gin.Context) {
 	err := copier.Copy(&scUser, &userRegister)
 
 	if err != nil {
-		logs.Error("数据转化异常。", err)
+		log.Error().Msgf("数据转化异常。", err)
 		myCtx.JSON(API.DATA_ERROR, "服务异常")
 		return
 	}
@@ -140,7 +141,7 @@ func UserRegister(c *gin.Context) {
 	err = dao.SaveScUser(&scUser)
 
 	if err != nil {
-		logs.Error("用户保存失败。", err)
+		log.Error().Msgf("用户保存失败。", err)
 		myCtx.JSON(API.DATA_ERROR, "")
 		return
 	} else {
@@ -153,17 +154,17 @@ func ModifyUser(c *gin.Context) {
 	myCtx := &CustomContext{c}
 	var modifyUser request.ModifyUserReq
 	if err := myCtx.ShouldBindJSON(&modifyUser); err != nil {
-		logs.Error("Error binding JSON:", err.Error())
+		log.Error().Msgf("Error binding JSON:", err.Error())
 		myCtx.JSON(API.DATA_VALIDATE_ERROR, "")
 		return
 	}
 	if errorMsg := dataValidate(modifyUser); errorMsg != nil {
-		logs.Error("入参校验失败:", errorMsg)
+		log.Error().Msgf("入参校验失败:", errorMsg)
 		myCtx.JSON(API.DATA_ERROR, "")
 		return
 	}
 
-	logs.Info("修改用户信息入参为：", modifyUser)
+	log.Info().Msgf("修改用户信息入参为：", modifyUser)
 
 	user, _ := dao.SelectUser("id=? and is_deleted=0", modifyUser.UserId)
 
@@ -223,7 +224,7 @@ func ModifyUser(c *gin.Context) {
 
 	rowNum, err := dao.Update("id=?", updateValue, modifyUser.UserId)
 	if err != nil || rowNum == 0 {
-		logs.Error("用户修改信息失败，", err)
+		log.Error().Msgf("用户修改信息失败，", err)
 		myCtx.JSON2(API.COMMOM_ERROR, "用户修改信息失败")
 		return
 	}
@@ -238,14 +239,14 @@ func DeleteUser(c *gin.Context) {
 	if exists {
 		err := json.Unmarshal([]byte(value.(string)), &userInfo)
 		if err != nil {
-			logs.Error("解析用户信息失败。", err)
+			log.Error().Msgf("解析用户信息失败。", err)
 			myCtx.JSON(API.COMMOM_ERROR, "解析用户信息失败")
 			return
 		}
 	}
 
 	userId := myCtx.Query("uid")
-	logs.Info("注销用户，入参为：", userId)
+	log.Info().Msgf("注销用户，入参为：", userId)
 
 	if userId != userInfo.UserUID {
 		myCtx.JSON(API.COMMOM_ERROR, "无权注销别人的账号")
@@ -254,7 +255,7 @@ func DeleteUser(c *gin.Context) {
 	err := dao.DeleteScUser("user_uid=?", userId)
 
 	if err != nil {
-		logs.Error("注销失败。", err)
+		log.Error().Msgf("注销失败。", err)
 		myCtx.JSON2(API.COMMOM_ERROR, "注销失败")
 		return
 	}

@@ -2,6 +2,7 @@ package model
 
 import (
 	"errors"
+	"github.com/rs/zerolog/log"
 	"gorm.io/gorm"
 	"time"
 )
@@ -65,7 +66,7 @@ func (d *Dao) SelectStakePoolPage(pageSize, pageNum int, orderBy, where string, 
 	if err = tx.Find(&stakePools).Error; err != nil {
 
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			logs.Error("stakePool.SelectPoolPage where(%s) params(%+v) offset(%d) limit(%d) error(%+v)",
+			log.Error().Msgf("stakePool.SelectPoolPage where(%s) params(%+v) offset(%d) limit(%d) error(%+v)",
 				where, params, pageSize, pageNum, err)
 			return
 		}

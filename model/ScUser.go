@@ -3,6 +3,7 @@ package model
 import (
 	"errors"
 	"gorm.io/gorm"
+	"strong-defi-backend/pkg/log"
 	"time"
 )
 
@@ -80,7 +81,7 @@ func (d *Dao) SelectUserPage(pageNum, pageSize int, orderBy, where string, param
 
 	if err = orm.Find(&scUsers).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			logs.Error("scUser.SelectUserPage where(%s) params(%+v) offset(%d) limit(%d) error(%+v)",
+			log.Error().Msgf("scUser.SelectUserPage where(%s) params(%+v) offset(%d) limit(%d) error(%+v)",
 				where, params, pageSize, pageNum, err)
 			return
 		}
@@ -110,7 +111,7 @@ func (d *Dao) Update(where string, values map[string]interface{}, queryArgs ...i
 func (d *Dao) SaveScUser(user *ScUser) (err error) {
 
 	if err = d.ORM().Save(user).Error; err != nil {
-		logs.Error("dmDao.SaveContractEntity entity(%+v) error(%+v)", user, err)
+		log.Error().Msgf("dmDao.SaveContractEntity entity(%+v) error(%+v)", user, err)
 	}
 	return err
 }
