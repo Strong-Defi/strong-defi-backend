@@ -14,7 +14,7 @@ log:
   compress: true            # 设置 compress 为 true 以启用压缩
 
 mysql:
-  dsn : "root:Yin123456!@tcp(127.0.0.1:3306)/sc_stake?timeout=5s&readTimeout=5s&writeTimeout=5s&parseTime=true&loc=Local&charset=utf8,utf8mb4"
+  dsn : "root:root12345@tcp(127.0.0.1:3306)/sc_stake?timeout=5s&readTimeout=5s&writeTimeout=5s&parseTime=true&loc=Local&charset=utf8,utf8mb4"
   active : 20   #最大空闲连接数
   idle : 5      #最大打开连接数
   idleTimeout : 4  #单位是小时
