@@ -29,12 +29,12 @@ func (ScUser) TableName() string {
 
 func (d *Dao) SelectUser(where string, params ...interface{}) (scUser *ScUser, err error) {
 	scUser = new(ScUser)
-	result := d.ORM().Where(where, params).First(&scUser)
+	result := d.ORM().Where(where, params...).First(&scUser)
 
-	if result.Error != nil {
-		panic(result.Error)
-		return nil, result.Error
-	}
+	//if result.Error != nil {
+	//	panic(result.Error)
+	//	return nil, result.Error
+	//}
 	if result.RowsAffected == 0 {
 		return nil, nil
 	}

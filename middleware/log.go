@@ -3,7 +3,10 @@ package middleware
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/rs/zerolog"
+	"io"
 	"strong-defi-backend/pkg/log"
+	"time"
 )
 
 func Logging() gin.HandlerFunc {
@@ -17,5 +20,12 @@ func Logging() gin.HandlerFunc {
 		c.Set("trace_id", traceID)
 
 		c.Next()
+
+		rq, _ := io.ReadAll(c.Request.Body)
+		log.Info().
+			Dict("request", zerolog.Dict().
+				Str("uri", c.Request.RequestURI).
+				Str("requestData", string(rq)),
+			).Msgf("duration_time: %d", float32((time.Now().UnixMilli()-t)/1000))
 	}
 }
