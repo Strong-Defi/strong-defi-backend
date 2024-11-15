@@ -8,29 +8,34 @@ import (
 
 func Route(r *gin.Engine) *gin.Engine {
 
-	e := r.Group("/gin/user", middleware.Logging(), middleware.Auth())
+	lr := r.Group("/gin", middleware.Logging())
 	{
-		e.GET("/login", service.UserLogin)
-		e.POST("/UserRegister", service.UserRegister)
-		e.GET("/register", service.GetContractInfo)
-		e.GET("/queryIsExist", service.QueryUserIsExist)
-		e.GET("/queryByWalletAddress", service.QueryByWalletAddress)
-		e.GET("/queryByTelephone", service.QueryByTelephone)
-		e.POST("/modifyUser", service.ModifyUser)
-		e.GET("/deleteUser", service.DeleteUser)
-	}
+		lr.GET("/user/login", service.UserLogin)
+		lr.POST("/user/UserRegister", service.UserRegister)
 
-	i := r.Group("/gin/stake", middleware.Logging(), middleware.Auth())
-	{
-		i.POST("/getAccountBalance", service.GetAccountBalance)
-		i.POST("/addPool", service.AddPool)
-		i.POST("/userApprove", service.UserApprove)
-		i.POST("/userStake", service.UserStake)
-		i.POST("/getUserInfo", service.GetUserInfo)
-		i.POST("/getAllPool", service.GetAllPool)
-		i.GET("/getPoolDetail", service.GetPoolDetail)
-		i.POST("/userTransfer", service.UserTransfer)
-		i.POST("/tokenBalance", service.TokenBalance)
+		ar := lr.Group("/user")
+		ar.Use(middleware.Auth())
+		{
+			lr.GET("/register", service.GetContractInfo)
+			lr.GET("/queryIsExist", service.QueryUserIsExist)
+			lr.GET("/queryByWalletAddress", service.QueryByWalletAddress)
+			lr.GET("/queryByTelephone", service.QueryByTelephone)
+			lr.POST("/modifyUser", service.ModifyUser)
+			lr.GET("/deleteUser", service.DeleteUser)
+		}
+
+		sr := ar.Group("/stake")
+		{
+			sr.POST("/getAccountBalance", service.GetAccountBalance)
+			sr.POST("/addPool", service.AddPool)
+			sr.POST("/userApprove", service.UserApprove)
+			sr.POST("/userStake", service.UserStake)
+			sr.POST("/getUserInfo", service.GetUserInfo)
+			sr.POST("/getAllPool", service.GetAllPool)
+			sr.GET("/getPoolDetail", service.GetPoolDetail)
+			sr.POST("/userTransfer", service.UserTransfer)
+			sr.POST("/tokenBalance", service.TokenBalance)
+		}
 	}
 
 	return r
