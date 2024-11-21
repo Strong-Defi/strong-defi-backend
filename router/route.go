@@ -25,7 +25,8 @@ func Route(r *gin.Engine) *gin.Engine {
 		}
 
 		//质押相关接口
-		sr := ar.Group("/stake")
+		sr := lr.Group("/stake")
+		sr.Use(middleware.Auth())
 		{
 			sr.POST("/getAccountBalance", service.GetAccountBalance)
 			sr.POST("/addPool", service.AddPool)
@@ -34,13 +35,22 @@ func Route(r *gin.Engine) *gin.Engine {
 			sr.POST("/getUserInfo", service.GetUserInfo)
 			sr.POST("/getAllPool", service.GetAllPool)
 			sr.GET("/getPoolDetail", service.GetPoolDetail)
+			sr.GET("/userPauseStake", service.UserPauseStake)
 		}
 
 		//代币相关接口
-		ts := ar.Group("/token")
+		token := lr.Group("/token")
+		token.Use(middleware.Auth())
 		{
-			ts.POST("/userTransfer", service.UserTransfer)
-			ts.GET("/tokenBalance", service.TokenBalance)
+			token.POST("/userTransfer", service.UserTransfer)
+			token.GET("/tokenBalance", service.TokenBalance)
+		}
+
+		//代币相关接口
+		transLog := lr.Group("/trans/logs")
+		transLog.Use(middleware.Auth())
+		{
+			transLog.POST("/queryTransLogs", service.QueryTransLogs)
 		}
 
 	}

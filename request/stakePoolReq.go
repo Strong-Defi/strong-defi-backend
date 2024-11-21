@@ -66,3 +66,16 @@ type UserTransferReq struct {
 	//转账数量
 	Amount int64 `json:"amount" validate:"required"`
 }
+
+// UserPauseStakeReq 用户请求
+type UserPauseStakeReq struct {
+
+	//池id
+	PoolCode string `json:"poolCode" validate:"required"`
+
+	//用户私钥，todo 这里还需要重新设计私钥的管理，不能让用户直接将私钥暴露在钱后端交互中
+	UserPrivateKey string `json:"userPrivateKey" validate:"required"`
+
+	//转账数量
+	Amount int64 `json:"amount" validate:"required"`
+}

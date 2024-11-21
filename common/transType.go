@@ -9,6 +9,7 @@ const (
 	UserStake
 	UserApprove
 	UserTransfer
+	UserPauseStake
 )
 
 // String 方法用于转换为字符串
@@ -22,6 +23,8 @@ func (s TransType) String() string {
 		return "USER_APPROVE"
 	case UserTransfer:
 		return "USER_TRANSFER"
+	case UserPauseStake:
+		return "USER_PAUSE_STAKE"
 	default:
 		return "UNKNOWN"
 	}
@@ -37,6 +40,8 @@ func (s TransType) TransTypeParse(value string) TransType {
 		return 2
 	case "USER_TRANSFER":
 		return 3
+	case "USER_PAUSE_STAKE":
+		return 4
 	default:
 		return -1
 	}
@@ -52,6 +57,8 @@ func (s TransType) IsValid() bool {
 	case UserApprove:
 		return true
 	case UserTransfer:
+		return true
+	case UserPauseStake:
 		return true
 	default:
 		return false

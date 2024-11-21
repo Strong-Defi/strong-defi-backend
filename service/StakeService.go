@@ -14,7 +14,6 @@ import (
 	"math/big"
 	"strings"
 	API "strong-defi-backend/common"
-	"strong-defi-backend/contract/scToken"
 	"strong-defi-backend/contract/schStake"
 	"strong-defi-backend/model"
 	"strong-defi-backend/pkg/log"
@@ -110,7 +109,7 @@ func AddPool(c *gin.Context) {
 		myCtx.JSON2(API.COMMOM_ERROR, "获取nonce失败")
 		return
 	}
-	newContract, _ := sch_stake.NewSCHStake(address, client)
+	newContract, _ := sch_stake.NewSCHStake(common.HexToAddress(app.ContractAddress), client)
 
 	//获取chaiID
 	chaiID, err := client.ChainID(context.Background())
@@ -178,90 +177,6 @@ func AddPool(c *gin.Context) {
 	myCtx.JSON(API.SUCCESS, "")
 }
 
-// UserApprove 用户转账授权
-func UserApprove(c *gin.Context) {
-
-	myCtx := &CustomContext{c}
-
-	var req request.UserApproveReq
-
-	err := myCtx.ShouldBindJSON(&req)
-
-	if err != nil {
-		log.Error().Msgf("Error binding JSON:(%+v)", err.Error())
-		myCtx.JSON(API.DATA_ERROR, err.Error())
-		return
-	}
-
-	if errorMsg := dataValidate(req); errorMsg != nil {
-		log.Error().Msgf("入参校验失败:(%+v)", errorMsg)
-		myCtx.JSON(API.DATA_VALIDATE_ERROR, "")
-		return
-	}
-
-	if req.Amount <= 0 {
-		log.Info().Msgf("转账数量必须大于0")
-		myCtx.JSON2(API.DATA_ERROR, "转账数量必须大于0")
-		return
-	}
-
-	value, _ := myCtx.Get(API.TOKEN_KEY)
-
-	var scUser model.ScUser
-	err = json.Unmarshal([]byte(value.(string)), &scUser)
-	if err != nil {
-		log.Error().Msgf("解析用户信息失败。(%+v)", err)
-		myCtx.JSON2(API.COMMOM_ERROR, "解析用户信息失败")
-		return
-	}
-	//用户授权，优先查询用户本地代币数量
-	scTokenAddress := common.HexToAddress(app.TokenAddress)
-	client, err := ethclient.Dial(app.DeployAddress)
-	if err != nil {
-		log.Error().Msgf("连接合约失败。(%+v)", err)
-		myCtx.JSON2(API.COMMOM_ERROR, "连接合约失败")
-		return
-	}
-
-	at, _ := client.PendingNonceAt(context.Background(), scTokenAddress)
-
-	scToken, err := sc_token.NewSCTToken(scTokenAddress, client)
-	//获取chaiID
-	chaiID, err := client.ChainID(context.Background())
-	//获取交易签名函数
-	ecdsa, _ := crypto.HexToECDSA(req.UserPrivateKey)
-
-	//创建签名函数
-	signer := utils.CreateSigner(ecdsa, chaiID)
-
-	opts := &bind.TransactOpts{
-		From: common.HexToAddress(scUser.UserWalletAddress),
-		//设置nonce值进行防重处理
-		Nonce: new(big.Int).SetUint64(at),
-		//这个是给合约发送的值，不是转的值
-		Value:  big.NewInt(0),
-		Signer: signer,
-	}
-	approve, err := scToken.Approve(opts, common.HexToAddress(scUser.UserWalletAddress), big.NewInt(req.Amount))
-	if err != nil {
-		log.Error().Msgf("授权失败。(%+v)", err)
-		myCtx.JSON2(API.COMMOM_ERROR, "授权失败")
-		return
-	}
-	receipt, _ := client.TransactionReceipt(context.Background(), approve.Hash())
-
-	//保存交易数据
-	go func() {
-		saveTransLogs(receipt, approve, scTokenAddress, &scUser, API.UserStake.String())
-	}()
-	if receipt.Status == types.ReceiptStatusSuccessful {
-		myCtx.JSON(API.SUCCESS, "")
-		return
-	}
-	log.Error().Msgf("授权状态失败。(%+v)", receipt.Logs)
-	myCtx.JSON2(API.COMMOM_ERROR, "授权状态失败")
-}
-
 // UserStake 用户质押
 func UserStake(c *gin.Context) {
 	myCtx := &CustomContext{c}
@@ -311,7 +226,7 @@ func UserStake(c *gin.Context) {
 		return
 	}
 
-	contractAddress := common.HexToAddress(app.DeployAddress)
+	contractAddress := common.HexToAddress(app.ContractAddress)
 
 	scStake, err := sch_stake.NewSCHStake(contractAddress, dial)
 	if err != nil {
@@ -408,7 +323,14 @@ func GetUserInfo(c *gin.Context) {
 	}
 
 	userAddress := common.HexToAddress(scUser.UserWalletAddress)
-	info, err := instance.GetUserInfo(nil, new(big.Int).SetInt64(pool.PoolID), userAddress)
+	//交易一定要有opts，不然会报错。获取不到交易发起者
+	opts := &bind.CallOpts{
+		//true是在待处理状态下进行交易，这样会有失败的风险，false合约调用将会在
+		//最后已确认的状态 下执行。即调用会基于最新的已完成的区块来计算合约的结果，不考虑当前待处理交易的影响
+		Pending: false,
+		From:    userAddress,
+	}
+	info, err := instance.GetUserInfo(opts, new(big.Int).SetInt64(pool.PoolID), userAddress)
 
 	if err != nil {
 		log.Error().Msgf("获取用户质押信息失败:(%+v)", err)
@@ -491,6 +413,87 @@ func GetPoolDetail(c *gin.Context) {
 
 	//todo 这里要进行质押池数据的组装,暂时先不组装
 	myCtx.JSON(API.SUCCESS, poolDetail)
+}
+
+// UserPauseStake 用户暂停质押
+func UserPauseStake(c *gin.Context) {
+
+	myCtx := &CustomContext{c}
+
+	var req request.UserPauseStakeReq
+
+	err := myCtx.ShouldBindJSON(&req)
+
+	if err != nil {
+		log.Error().Msgf("Error binding JSON:(%+v)", err.Error())
+		myCtx.JSON(API.DATA_ERROR, err.Error())
+		return
+	}
+
+	if errorMsg := dataValidate(req); errorMsg != nil {
+		log.Error().Msgf("入参校验失败:(%+v)", errorMsg)
+		myCtx.JSON(API.DATA_VALIDATE_ERROR, "")
+		return
+	}
+
+	value, _ := myCtx.Get(API.TOKEN_KEY)
+
+	var scUser model.ScUser
+	err = json.Unmarshal([]byte(value.(string)), &scUser)
+	if err != nil {
+		log.Error().Msgf("解析用户信息失败。(%+v)", err)
+		myCtx.JSON2(API.COMMOM_ERROR, "解析用户信息失败")
+		return
+	}
+	client, err := ethclient.Dial(app.DeployAddress)
+	if err != nil {
+		log.Error().Msgf("连接合约失败。(%+v)", err)
+		myCtx.JSON2(API.COMMOM_ERROR, "连接合约失败")
+		return
+	}
+	//用户地址
+	userAddress := common.HexToAddress(scUser.UserWalletAddress)
+
+	stake, _ := sch_stake.NewSCHStake(common.HexToAddress(app.ContractAddress), client)
+
+	//获取chaiID
+	chaiID, err := client.ChainID(context.Background())
+
+	//nonce值
+	nonce, _ := client.NonceAt(context.Background(), userAddress, nil)
+	//获取交易签名函数
+	ecdsa, _ := crypto.HexToECDSA(req.UserPrivateKey)
+	//创建签名函数
+	signer := utils.CreateSigner(ecdsa, chaiID)
+
+	//一定要有这个opts。因为要有From的值，不然获取不到msg.sender,这里的opts相当于通过什么账户链接合约的
+	opts := &bind.TransactOpts{
+		GasLimit: 21000,
+		From:     userAddress,
+		//设置nonce值进行防重处理
+		Nonce:  new(big.Int).SetInt64(int64(nonce)),
+		Signer: signer,
+	}
+
+	pool, _ := dao.GetStakePoolByCode(req.PoolCode)
+	pauseStakeTx, err := stake.PauseStake(opts, new(big.Int).SetInt64(pool.PoolID), userAddress, new(big.Int).SetInt64(req.Amount))
+
+	if err != nil {
+		log.Error().Msgf("暂停质押失败:(%+v)", err)
+		myCtx.JSON2(API.COMMOM_ERROR, "暂停质押失败")
+		return
+	}
+	transactionReceipt, _ := client.TransactionReceipt(context.Background(), pauseStakeTx.Hash())
+	log.Info().Msgf("暂停质押交易状态失败:(%+v)", transactionReceipt.Logs)
+	if transactionReceipt.Status == types.ReceiptStatusSuccessful {
+		//保存交易信息
+		saveTransLogs(transactionReceipt, pauseStakeTx, userAddress, &scUser, API.UserPauseStake.String())
+	} else {
+		log.Error().Msgf("暂停质押交易状态失败:(%+v)", transactionReceipt.Status)
+		myCtx.JSON2(API.COMMOM_ERROR, "暂停质押交易状态失败")
+		return
+	}
+	myCtx.JSON(API.SUCCESS, "")
 }
 
 // 保存交易信息

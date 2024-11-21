@@ -3,8 +3,10 @@ package service
 import (
 	"context"
 	"encoding/json"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/gin-gonic/gin"
 	"math/big"
@@ -108,6 +110,90 @@ func UserTransfer(c *gin.Context) {
 	}
 
 	myCtx.JSON(API.SUCCESS, "")
+}
+
+// UserApprove 用户转账授权
+func UserApprove(c *gin.Context) {
+
+	myCtx := &CustomContext{c}
+
+	var req request.UserApproveReq
+
+	err := myCtx.ShouldBindJSON(&req)
+
+	if err != nil {
+		log.Error().Msgf("Error binding JSON:(%+v)", err.Error())
+		myCtx.JSON(API.DATA_ERROR, err.Error())
+		return
+	}
+
+	if errorMsg := dataValidate(req); errorMsg != nil {
+		log.Error().Msgf("入参校验失败:(%+v)", errorMsg)
+		myCtx.JSON(API.DATA_VALIDATE_ERROR, "")
+		return
+	}
+
+	if req.Amount <= 0 {
+		log.Info().Msgf("转账数量必须大于0")
+		myCtx.JSON2(API.DATA_ERROR, "转账数量必须大于0")
+		return
+	}
+
+	value, _ := myCtx.Get(API.TOKEN_KEY)
+
+	var scUser model.ScUser
+	err = json.Unmarshal([]byte(value.(string)), &scUser)
+	if err != nil {
+		log.Error().Msgf("解析用户信息失败。(%+v)", err)
+		myCtx.JSON2(API.COMMOM_ERROR, "解析用户信息失败")
+		return
+	}
+	//用户授权，优先查询用户本地代币数量
+	scTokenAddress := common.HexToAddress(app.TokenAddress)
+	client, err := ethclient.Dial(app.DeployAddress)
+	if err != nil {
+		log.Error().Msgf("连接合约失败。(%+v)", err)
+		myCtx.JSON2(API.COMMOM_ERROR, "连接合约失败")
+		return
+	}
+
+	at, _ := client.PendingNonceAt(context.Background(), scTokenAddress)
+
+	scToken, err := sc_token.NewSCTToken(scTokenAddress, client)
+	//获取chaiID
+	chaiID, err := client.ChainID(context.Background())
+	//获取交易签名函数
+	ecdsa, _ := crypto.HexToECDSA(req.UserPrivateKey)
+
+	//创建签名函数
+	signer := utils.CreateSigner(ecdsa, chaiID)
+
+	opts := &bind.TransactOpts{
+		From: common.HexToAddress(scUser.UserWalletAddress),
+		//设置nonce值进行防重处理
+		Nonce: new(big.Int).SetUint64(at),
+		//这个是给合约发送的值，不是转的值
+		Value:  big.NewInt(0),
+		Signer: signer,
+	}
+	approve, err := scToken.Approve(opts, common.HexToAddress(scUser.UserWalletAddress), big.NewInt(req.Amount))
+	if err != nil {
+		log.Error().Msgf("授权失败。(%+v)", err)
+		myCtx.JSON2(API.COMMOM_ERROR, "授权失败")
+		return
+	}
+	receipt, _ := client.TransactionReceipt(context.Background(), approve.Hash())
+
+	//保存交易数据
+	go func() {
+		saveTransLogs(receipt, approve, scTokenAddress, &scUser, API.UserStake.String())
+	}()
+	if receipt.Status == types.ReceiptStatusSuccessful {
+		myCtx.JSON(API.SUCCESS, "")
+		return
+	}
+	log.Error().Msgf("授权状态失败。(%+v)", receipt.Logs)
+	myCtx.JSON2(API.COMMOM_ERROR, "授权状态失败")
 }
 
 // TokenBalance 查询代币余额
