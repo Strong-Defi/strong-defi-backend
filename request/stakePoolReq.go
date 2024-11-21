@@ -55,3 +55,14 @@ type AllPoolReq struct {
 	PageNum  int `json:"pageNum" validate:"required"`
 	PageSize int `json:"pageSize" validate:"required"`
 }
+
+// UserTransferReq 用户转账请求
+type UserTransferReq struct {
+
+	//接收人地址
+	ReceiveAddress string `json:"receiveAddress" validate:"required"`
+	//发起人地址
+	SendAddress string `json:"sendAddress" validate:"required"`
+	//转账数量
+	Amount int64 `json:"amount" validate:"required"`
+}

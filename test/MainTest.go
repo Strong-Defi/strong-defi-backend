@@ -2,11 +2,9 @@ package main
 
 import (
 	"fmt"
-	"strong-defi-backend/utils"
 )
 
 func main() {
-	charInt := utils.Generate16CharInt(12)
 
-	fmt.Println(charInt)
+	fmt.Println(fmt.Sprintf("你好:%+v", "1111"))
 }

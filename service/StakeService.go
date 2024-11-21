@@ -30,13 +30,13 @@ func GetAccountBalance(c *gin.Context) {
 	err := myCtx.ShouldBindJSON(&accountReq)
 
 	if err != nil {
-		log.Error().Msgf("Error binding JSON:", err.Error())
+		log.Error().Msgf("Error binding JSON:(%+v)", err.Error())
 		myCtx.JSON(API.DATA_ERROR, err.Error())
 		return
 	}
 
 	if errorMsg := dataValidate(accountReq); errorMsg != nil {
-		log.Error().Msgf("入参校验失败:", errorMsg)
+		log.Error().Msgf("入参校验失败:(%+v)", errorMsg)
 		myCtx.JSON(API.DATA_VALIDATE_ERROR, "")
 		return
 	}
@@ -44,7 +44,7 @@ func GetAccountBalance(c *gin.Context) {
 	/*获取连接*/
 	client, err1 := ethclient.Dial(accountReq.Url)
 	if err1 != nil {
-		log.Error().Msgf("获取以太坊节点失败:", err.Error())
+		log.Error().Msgf("获取以太坊节点失败:(%+v)", err.Error())
 		myCtx.JSON(API.DATA_ERROR, err.Error())
 		return
 	}
@@ -83,13 +83,13 @@ func AddPool(c *gin.Context) {
 	err := myCtx.ShouldBindJSON(&addPoolReq)
 
 	if err != nil {
-		log.Error().Msgf("Error binding JSON:", err.Error())
+		log.Error().Msgf("Error binding JSON:(%+v)", err.Error())
 		myCtx.JSON(API.DATA_ERROR, err.Error())
 		return
 	}
 
 	if errorMsg := dataValidate(addPoolReq); errorMsg != nil {
-		log.Error().Msgf("入参校验失败:", errorMsg)
+		log.Error().Msgf("入参校验失败:(%+v)", errorMsg)
 		myCtx.JSON(API.DATA_VALIDATE_ERROR, "")
 		return
 	}
@@ -97,7 +97,7 @@ func AddPool(c *gin.Context) {
 	client, err := ethclient.Dial(app.DeployAddress)
 
 	if err != nil {
-		log.Error().Msgf("以太坊连接失败。", err)
+		log.Error().Msgf("以太坊连接失败。(%+v)", err)
 		myCtx.JSON2(API.COMMOM_ERROR, "以太坊连接失败")
 		return
 	}
@@ -106,7 +106,7 @@ func AddPool(c *gin.Context) {
 	nonce, err := client.PendingNonceAt(context.Background(), address)
 
 	if err != nil {
-		log.Error().Msgf("获取nonce失败。", err)
+		log.Error().Msgf("获取nonce失败。(%+v)", err)
 		myCtx.JSON2(API.COMMOM_ERROR, "获取nonce失败")
 		return
 	}
@@ -148,7 +148,7 @@ func AddPool(c *gin.Context) {
 				err2 := parseABI.UnpackIntoInterface(&events, "AddPool", vlog.Data)
 
 				if err2 != nil {
-					log.Error().Msgf("获取nonce失败。", err)
+					log.Error().Msgf("获取nonce失败。(%+v)", err)
 					return
 				}
 				poolId := int64(binary.BigEndian.Uint64(events[0].Value[:]))
@@ -170,12 +170,11 @@ func AddPool(c *gin.Context) {
 		}()
 	}
 	if err != nil {
-		log.Error().Msgf("添加质押池报错。", err)
+		log.Error().Msgf("添加质押池报错。(%+v)", err)
 		myCtx.JSON2(API.COMMOM_ERROR, "添加质押池报错")
 		return
 	}
-	//获取交易收据
-
+	log.Info().Msgf("添加质押池成功。")
 	myCtx.JSON(API.SUCCESS, "")
 }
 
@@ -189,13 +188,13 @@ func UserApprove(c *gin.Context) {
 	err := myCtx.ShouldBindJSON(&req)
 
 	if err != nil {
-		log.Error().Msgf("Error binding JSON:", err.Error())
+		log.Error().Msgf("Error binding JSON:(%+v)", err.Error())
 		myCtx.JSON(API.DATA_ERROR, err.Error())
 		return
 	}
 
 	if errorMsg := dataValidate(req); errorMsg != nil {
-		log.Error().Msgf("入参校验失败:", errorMsg)
+		log.Error().Msgf("入参校验失败:(%+v)", errorMsg)
 		myCtx.JSON(API.DATA_VALIDATE_ERROR, "")
 		return
 	}
@@ -211,7 +210,7 @@ func UserApprove(c *gin.Context) {
 	var scUser model.ScUser
 	err = json.Unmarshal([]byte(value.(string)), &scUser)
 	if err != nil {
-		log.Error().Msgf("解析用户信息失败。", err)
+		log.Error().Msgf("解析用户信息失败。(%+v)", err)
 		myCtx.JSON2(API.COMMOM_ERROR, "解析用户信息失败")
 		return
 	}
@@ -219,7 +218,7 @@ func UserApprove(c *gin.Context) {
 	scTokenAddress := common.HexToAddress(app.TokenAddress)
 	client, err := ethclient.Dial(app.DeployAddress)
 	if err != nil {
-		log.Error().Msgf("连接合约失败。", err)
+		log.Error().Msgf("连接合约失败。(%+v)", err)
 		myCtx.JSON2(API.COMMOM_ERROR, "连接合约失败")
 		return
 	}
@@ -245,7 +244,7 @@ func UserApprove(c *gin.Context) {
 	}
 	approve, err := scToken.Approve(opts, common.HexToAddress(scUser.UserWalletAddress), big.NewInt(req.Amount))
 	if err != nil {
-		log.Error().Msgf("授权失败。", err)
+		log.Error().Msgf("授权失败。(%+v)", err)
 		myCtx.JSON2(API.COMMOM_ERROR, "授权失败")
 		return
 	}
@@ -259,7 +258,7 @@ func UserApprove(c *gin.Context) {
 		myCtx.JSON(API.SUCCESS, "")
 		return
 	}
-	log.Error().Msgf("授权状态失败。", receipt.Logs)
+	log.Error().Msgf("授权状态失败。(%+v)", receipt.Logs)
 	myCtx.JSON2(API.COMMOM_ERROR, "授权状态失败")
 }
 
@@ -272,13 +271,13 @@ func UserStake(c *gin.Context) {
 	err := myCtx.ShouldBindJSON(&req)
 
 	if err != nil {
-		log.Error().Msgf("Error binding JSON:", err.Error())
+		log.Error().Msgf("Error binding JSON:(%+v)", err.Error())
 		myCtx.JSON(API.DATA_ERROR, err.Error())
 		return
 	}
 
 	if errorMsg := dataValidate(req); errorMsg != nil {
-		log.Error().Msgf("入参校验失败:", errorMsg)
+		log.Error().Msgf("入参校验失败:(%+v)", errorMsg)
 		myCtx.JSON(API.DATA_VALIDATE_ERROR, "")
 		return
 	}
@@ -288,14 +287,14 @@ func UserStake(c *gin.Context) {
 	var scUser model.ScUser
 	err = json.Unmarshal([]byte(value.(string)), &scUser)
 	if err != nil {
-		log.Error().Msgf("解析用户信息失败。", err)
+		log.Error().Msgf("解析用户信息失败。(%+v)", err)
 		myCtx.JSON2(API.COMMOM_ERROR, "解析用户信息失败")
 		return
 	}
 
 	dial, err := ethclient.Dial(app.DeployAddress)
 	if err != nil {
-		log.Error().Msgf("连接合约失败。", err)
+		log.Error().Msgf("连接合约失败。(%+v)", err)
 		myCtx.JSON2(API.COMMOM_ERROR, "连接合约失败")
 		return
 	}
@@ -303,11 +302,11 @@ func UserStake(c *gin.Context) {
 	//查询质押池
 	stakePool, err := dao.GetStakePoolByCode(req.PoolCode)
 	if err != nil {
-		log.Error().Msgf("查询质押池失败。", err)
+		log.Error().Msgf("查询质押池失败。(%+v)", err)
 		myCtx.JSON2(API.COMMOM_ERROR, "查询质押池失败")
 		return
 	} else if stakePool == nil {
-		log.Warn().Msgf("该质押池不存在", req)
+		log.Warn().Msgf("该质押池不存在,入参为：%+v", req)
 		myCtx.JSON(API.POOL_NOT_EXIST, "")
 		return
 	}
@@ -316,7 +315,7 @@ func UserStake(c *gin.Context) {
 
 	scStake, err := sch_stake.NewSCHStake(contractAddress, dial)
 	if err != nil {
-		log.Error().Msgf("创建合约实例失败。", err)
+		log.Error().Msgf("创建合约实例失败。(%+v)", err)
 		myCtx.JSON2(API.COMMOM_ERROR, "创建合约实例失败")
 		return
 	}
@@ -328,7 +327,7 @@ func UserStake(c *gin.Context) {
 	//用户质押
 	tx, err := scStake.Stake(opts, new(big.Int).SetInt64(stakePool.PoolID), userAddress, new(big.Int).SetInt64(req.Amount))
 	if err != nil {
-		log.Error().Msgf("用户质押失败。", err)
+		log.Error().Msgf("用户质押失败。%+v", err)
 		myCtx.JSON2(API.COMMOM_ERROR, "用户质押失败")
 		return
 	}
@@ -350,7 +349,7 @@ func UserStake(c *gin.Context) {
 		_ = dao.CreateScStakeRecord(scStakeRecord)
 		//存入交易日志表
 		if saveTransLogs(receipt, tx, userAddress, &scUser, API.UserStake.String()) {
-			log.Error().Msgf("用户质押失败。", err)
+			log.Error().Msgf("用户质押失败。%+v", err)
 			return
 		}
 	}
@@ -365,13 +364,13 @@ func GetUserInfo(c *gin.Context) {
 	err := myCtx.ShouldBindJSON(&req)
 
 	if err != nil {
-		log.Error().Msgf("Error binding JSON:", err.Error())
+		log.Error().Msgf("Error binding JSON:%+v", err.Error())
 		myCtx.JSON(API.DATA_ERROR, err.Error())
 		return
 	}
 
 	if errorMsg := dataValidate(req); errorMsg != nil {
-		log.Error().Msgf("入参校验失败:", errorMsg)
+		log.Error().Msgf("入参校验失败:(%+v)", errorMsg)
 		myCtx.JSON(API.DATA_VALIDATE_ERROR, "")
 		return
 	}
@@ -399,7 +398,7 @@ func GetUserInfo(c *gin.Context) {
 	pool, err := dao.GetStakePoolByCode(req.PoolCode)
 
 	if err != nil {
-		log.Error().Msgf("根据poolCode查询pool异常", err)
+		log.Error().Msgf("根据poolCode查询pool异常:(%+v)", err)
 		myCtx.JSON2(API.COMMOM_ERROR, "根据poolCode查询pool异常")
 		return
 	} else if pool == nil {
@@ -412,7 +411,7 @@ func GetUserInfo(c *gin.Context) {
 	info, err := instance.GetUserInfo(nil, new(big.Int).SetInt64(pool.PoolID), userAddress)
 
 	if err != nil {
-		log.Error().Msgf("获取用户质押信息失败", err)
+		log.Error().Msgf("获取用户质押信息失败:(%+v)", err)
 		myCtx.JSON2(API.COMMOM_ERROR, "获取用户质押信息失败")
 		return
 	}
@@ -428,27 +427,27 @@ func GetAllPool(c *gin.Context) {
 	err := myCtx.ShouldBindJSON(&req)
 
 	if err != nil {
-		log.Error().Msgf("Error binding JSON:", err.Error())
+		log.Error().Msgf("Error binding JSON:(%+v)", err.Error())
 		myCtx.JSON(API.DATA_ERROR, err.Error())
 		return
 	}
 
 	if errorMsg := dataValidate(req); errorMsg != nil {
-		log.Error().Msgf("入参校验失败:", errorMsg)
+		log.Error().Msgf("入参校验失败:(%+v)", errorMsg)
 		myCtx.JSON(API.DATA_VALIDATE_ERROR, "")
 		return
 	}
 
-	log.Info().Msgf("获取所有池子信息入参为：", req)
+	log.Info().Msgf("获取所有池子信息入参为：(%+v)", req)
 
 	allPool, err := dao.SelectStakePoolPage(req.PageSize, req.PageNum, "", "")
 
 	if err != nil {
-		log.Error().Msgf("获取所有池子信息失败", err)
+		log.Error().Msgf("获取所有池子信息失败:(%+v)", err)
 		myCtx.JSON2(API.COMMOM_ERROR, "获取所有池子信息失败")
 		return
 	}
-	log.Info().Msgf("查询质押池结果为：", allPool)
+	log.Info().Msgf("查询质押池结果为：(%+v)", allPool)
 	myCtx.JSON(API.SUCCESS, allPool)
 }
 
@@ -471,20 +470,20 @@ func GetPoolDetail(c *gin.Context) {
 		myCtx.JSON2(API.COMMOM_ERROR, "查询质押池异常")
 		return
 	}
-	log.Info().Msgf("根据poolCode查询pool结果为：", pool)
+	log.Info().Msgf("根据poolCode查询pool结果为：(%+v)", pool)
 
 	contractAddress := common.HexToAddress(app.ContractAddress)
 
 	dial, err := ethclient.Dial(app.DeployAddress)
 	if err != nil {
-		log.Error().Msgf("获取以太坊节点失败:", err.Error())
+		log.Error().Msgf("获取以太坊节点失败:(%+v)", err.Error())
 		myCtx.JSON(API.DATA_ERROR, err.Error())
 		return
 	}
 
 	schStake, err := sch_stake.NewSCHStake(contractAddress, dial)
 	if err != nil {
-		log.Error().Msgf("获取合约实例失败:", err)
+		log.Error().Msgf("获取合约实例失败:(%+v)", err)
 		myCtx.JSON2(API.COMMOM_ERROR, "获取合约实例失败")
 		return
 	}
@@ -492,16 +491,6 @@ func GetPoolDetail(c *gin.Context) {
 
 	//todo 这里要进行质押池数据的组装,暂时先不组装
 	myCtx.JSON(API.SUCCESS, poolDetail)
-}
-
-// UserTransfer 用户本地代币转账
-func UserTransfer(c *gin.Context) {
-
-}
-
-// TokenBalance 查询代币余额
-func TokenBalance(c *gin.Context) {
-
 }
 
 // 保存交易信息
@@ -527,7 +516,7 @@ func saveTransLogs(receipt *types.Receipt,
 
 	err2 := dao.CreateScTransLog(&scTransLogs)
 	if err2 != nil {
-		log.Error().Msgf("保存交易信息失败", err2)
+		log.Error().Msgf("保存交易信息失败:(%+v)", err2)
 		return true
 	}
 	return false

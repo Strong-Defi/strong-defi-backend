@@ -24,6 +24,7 @@ func Route(r *gin.Engine) *gin.Engine {
 			lr.GET("/deleteUser", service.DeleteUser)
 		}
 
+		//质押相关接口
 		sr := ar.Group("/stake")
 		{
 			sr.POST("/getAccountBalance", service.GetAccountBalance)
@@ -33,9 +34,15 @@ func Route(r *gin.Engine) *gin.Engine {
 			sr.POST("/getUserInfo", service.GetUserInfo)
 			sr.POST("/getAllPool", service.GetAllPool)
 			sr.GET("/getPoolDetail", service.GetPoolDetail)
-			sr.POST("/userTransfer", service.UserTransfer)
-			sr.POST("/tokenBalance", service.TokenBalance)
 		}
+
+		//代币相关接口
+		ts := ar.Group("/token")
+		{
+			ts.POST("/userTransfer", service.UserTransfer)
+			ts.GET("/tokenBalance", service.TokenBalance)
+		}
+
 	}
 
 	return r
